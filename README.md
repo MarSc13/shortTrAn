@@ -1,1 +1,4 @@
 # shortTrAn
+Is an approach to calculate the local diffusion coefficient and the  local speed of the direct motion from a large number of trajectories. The approach is based on the approach from Hoze, Holcman (2014) and was adapted to our datasets. The results are depicted in diffusion and directed motion maps.
+
+This analysis was used to study the VSG (variant surface gylcoprotein) diffusion in the relation to the flagellar pocket (FP) on the unicellular, eukaryotic parasite Trypanosoma brucei. The size of approx. 18 nm in length and 3 nm in width , as well as, the shape of the trypanosomes limit the length of the gained trajectories. Therefore the most popular and commonly used method, to calculate the diffusion coefficient from the fit of the TA-MSD, is not suitable for our datasets to gain robust statistics. 
