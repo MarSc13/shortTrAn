@@ -24,7 +24,7 @@ def loadmat_file(path):
     tracs[0:a, 2:4] = tracs[0:a, 2:4]*scale # scales to nm
 
     #tracs_unint16 = np.uint16(tracs) #reduction of datatype
-    tracs_unint16 = np.uint32(tracs)
+    tracs_unint16 = np.int32(tracs)
     
     trac_num, counts = np.unique(tracs_unint16[0:a,0],return_counts = True) #counts=trace number, #counts = length of each trajectory
 
