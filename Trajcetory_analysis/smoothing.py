@@ -90,6 +90,10 @@ def average_box_filter(data, scaled_pointfield, kdim, outliers, mode_outliers):
         #output data
         smoothed_data_fin=np.zeros((gaus_data_final.shape[0],gaus_data_final.shape[1]))
         smoothed_data_fin = gaus_data_final + cen_data_final
+        #multiplication with binaray smoothedData 
+        mask = np.zeros(smoothed_data.shape)
+        mask[smoothed_data != 0] = 1
+        smoothed_data_fin = np.multiply(smoothed_data_fin,mask)
 
     return(smoothed_data_fin)
     
