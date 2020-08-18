@@ -46,7 +46,7 @@ def create_tensorfield(array_x,array_y,diff_array_x,diff_array_y,tensorfield,dt)
 
 """Changes are calculated by firstly determining the differences of pos to pos and then trc for trc. The vectorfields 
 (directed motion) are generated from the velocity arrays and tensorfields (diffusion) are generated from diffarrays"""
-def calc_fields(a,time,path,resultpath,N,pointfield,tracs_unint16corr,trac_numcorr,vectorfield_x,vectorfield_y,
+def calc_fields(a,time_lag,path,resultpath,N,pointfield,tracs_unint16corr,trac_numcorr,vectorfield_x,vectorfield_y,
                 tensorfield_xx,tensorfield_xy,tensorfield_yx,tensorfield_yy):
 
     
@@ -55,9 +55,9 @@ def calc_fields(a,time,path,resultpath,N,pointfield,tracs_unint16corr,trac_numco
        #print('Path does not exist')
        os.mkdir(resultpath+'/Trc'+str(N))
        directory = resultpath+'/Trc'+str(N)
-       os.mkdir(directory+'/diffarray')
-       os.mkdir(directory+'/volarray')
-       os.mkdir(directory+'/trajec')
+#       os.mkdir(directory+'/diffarray')
+#       os.mkdir(directory+'/volarray')
+#       os.mkdir(directory+'/trajec')
     else:
        directory = resultpath+'/Trc'+str(N)
     
@@ -83,8 +83,8 @@ def calc_fields(a,time,path,resultpath,N,pointfield,tracs_unint16corr,trac_numco
             
             q = 'trajec_x_'+str(k)+'.csv' 
             w = 'trajec_y_'+str(k)+'.csv'
-            np.savetxt(directory + '/trajec/' + q, x_array, fmt='%d', delimiter=',',header='Value',comments='')
-            np.savetxt(directory + '/trajec/' + w, y_array, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/trajec/' + q, x_array, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/trajec/' + w, y_array, fmt='%d', delimiter=',',header='Value',comments='')
             
             x_array_uint16 = np.uint16(x_array)
             y_array_uint16 = np.uint16(y_array)
@@ -93,32 +93,32 @@ def calc_fields(a,time,path,resultpath,N,pointfield,tracs_unint16corr,trac_numco
             diff_array_x = create_diff_array(x_array)
             diff_array_y = -create_diff_array(y_array)
             
-            np.savetxt(directory + '/diffarray/diff_' + q, diff_array_x, fmt='%d', delimiter=',',header='Value',comments='')
-            np.savetxt(directory + '/diffarray/diff_' + w, diff_array_y, fmt='%d', delimiter=',',header='Value',comments='')        
+#            np.savetxt(directory + '/diffarray/diff_' + q, diff_array_x, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/diffarray/diff_' + w, diff_array_y, fmt='%d', delimiter=',',header='Value',comments='')        
             
             
-            vol_array_x = create_vol_array(diff_array_x,time)
-            vol_array_y = create_vol_array(diff_array_y,time)
+            vol_array_x = create_vol_array(diff_array_x,time_lag)
+            vol_array_y = create_vol_array(diff_array_y,time_lag)
             
-            np.savetxt(directory + '/volarray/vol_' + q, vol_array_x, fmt='%d', delimiter=',',header='Value',comments='')
-            np.savetxt(directory + '/volarray/vol_' + w, vol_array_y, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/volarray/vol_' + q, vol_array_x, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/volarray/vol_' + w, vol_array_y, fmt='%d', delimiter=',',header='Value',comments='')
     
             
             vectorfield_x = create_vectorfield(x_array_uint16,y_array_uint16,vol_array_x, vectorfield_x)
             vectorfield_y = create_vectorfield(x_array_uint16,y_array_uint16,vol_array_y, vectorfield_y)
         
         
-            tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time)
-            tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time)
-            tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time)
-            tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time)
+            tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag)
+            tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag)
+            tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag)
+            tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag)
             
             
         else:
             q = 'trajec_x_'+str(k)+'.csv' 
             w = 'trajec_y_'+str(k)+'.csv'
-            np.savetxt(directory + '/trajec/' + q, x_array, fmt='%d', delimiter=',',header='Value',comments='')
-            np.savetxt(directory + '/trajec/' + w, y_array, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/trajec/' + q, x_array, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/trajec/' + w, y_array, fmt='%d', delimiter=',',header='Value',comments='')
             
             x_array_uint16 = np.uint16(x_array)
             y_array_uint16 = np.uint16(y_array)
@@ -127,26 +127,26 @@ def calc_fields(a,time,path,resultpath,N,pointfield,tracs_unint16corr,trac_numco
             diff_array_x = create_diff_array(x_array)
             diff_array_y = -create_diff_array(y_array)
     
-            np.savetxt(directory + '/diffarray/diff_' + q, diff_array_x, fmt='%d', delimiter=',',header='Value',comments='')
-            np.savetxt(directory + '/diffarray/diff_' + w, diff_array_y, fmt='%d', delimiter=',',header='Value',comments='')        
+#            np.savetxt(directory + '/diffarray/diff_' + q, diff_array_x, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/diffarray/diff_' + w, diff_array_y, fmt='%d', delimiter=',',header='Value',comments='')        
             
             
-            vol_array_x = create_vol_array(diff_array_x,time)
-            vol_array_y = create_vol_array(diff_array_y,time)
+            vol_array_x = create_vol_array(diff_array_x,time_lag)
+            vol_array_y = create_vol_array(diff_array_y,time_lag)
             
             
-            np.savetxt(directory + '/volarray/vol_' + q, vol_array_x, fmt='%d', delimiter=',',header='Value',comments='')
-            np.savetxt(directory + '/volarray/vol_' + w, vol_array_y, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/volarray/vol_' + q, vol_array_x, fmt='%d', delimiter=',',header='Value',comments='')
+#            np.savetxt(directory + '/volarray/vol_' + w, vol_array_y, fmt='%d', delimiter=',',header='Value',comments='')
             
             
             vectorfield_x = create_vectorfield(x_array_uint16,y_array_uint16,vol_array_x, vectorfield_x)
             vectorfield_y = create_vectorfield(x_array_uint16,y_array_uint16,vol_array_y, vectorfield_y)
         
         
-            tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time)
-            tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time)
-            tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time)
-            tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time)
+            tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag)
+            tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag)
+            tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag)
+            tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag)
             
             k=k+1
             
