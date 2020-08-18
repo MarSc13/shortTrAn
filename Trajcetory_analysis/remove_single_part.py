@@ -17,6 +17,10 @@ def remove_single_part(trac_num,counts,a,tracs_unint16corr,trac_numcorr):
 
     threshold = 5
     
+    #if some trc are deleted because they where just loc then trac_nm and counts 
+    #need to be calc again
+    trac_num, counts = np.unique(tracs_unint16corr[0:a,0],return_counts = True)
+    
     binary_short = np.zeros(counts.shape[0]) #create array 
     binary_short[counts <= threshold] = 1 #counts shorter than thres will be 1 
     #trc num longer than thres will be set to 0
