@@ -80,13 +80,13 @@ def binning(scal, directory, pointfield,vectorfield_x,vectorfield_y,tensorfield_
     tif.imsave(directory+'/scaled_pointfield.tif',scaled_pointfield)
     tif.imsave(directory+'/scaled_pointfield_inv.tif',scaled_pointfield_inv)
     
-    tif.imsave(directory+'/scaled_vectorfield_x.tif',scaled_vectorfield_x)
-    tif.imsave(directory+'/scaled_vectorfield_y.tif',scaled_vectorfield_y)
+    tif.imsave(directory+'/scaled_vectorfield_x.tif',np.int32(scaled_vectorfield_x))
+    tif.imsave(directory+'/scaled_vectorfield_y.tif',np.int32(scaled_vectorfield_y))
     
-    tif.imsave(directory+'/scaled_tensorfield_xx.tif',scaled_tensorfield_xx)
-    tif.imsave(directory+'/scaled_tensorfield_xy.tif',scaled_tensorfield_xy)
-    tif.imsave(directory+'/scaled_tensorfield_yx.tif',scaled_tensorfield_yx)
-    tif.imsave(directory+'/scaled_tensorfield_yy.tif',scaled_tensorfield_yy)
+    tif.imsave(directory+'/scaled_tensorfield_xx.tif',np.int32(scaled_tensorfield_xx))
+    tif.imsave(directory+'/scaled_tensorfield_xy.tif',np.int32(scaled_tensorfield_xy))
+    tif.imsave(directory+'/scaled_tensorfield_yx.tif',np.int32(scaled_tensorfield_yx))
+    tif.imsave(directory+'/scaled_tensorfield_yy.tif',np.int32(scaled_tensorfield_yy))
     
     np.save(directory+'/par_im_sec_cell',par_im_sec_point)
     
