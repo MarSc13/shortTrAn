@@ -46,7 +46,9 @@ def remove_outliers(mask,kdim,kshape):
 
 """Removes isolated pixels and pixels containing entries below the threshold by using an binary mask (Filter 1 and filter 2 Hoze,Holcman 2014)
 Pixels containg less entries than the threshold and are isolated will be removed by multiplying with zero"""
-def remove_isolated_px(kdim,kshape,threshold,directory,scaled_pointfield,scld_ten_xx,scld_ten_xy,scld_ten_yx,scld_ten_yy,scld_vec_x,scld_vec_y):
+def remove_isolated_px(kdim,kshape,threshold,directory,scaled_pointfield,
+                       scld_ten_xx,scld_ten_xy,scld_ten_yx,scld_ten_yy,
+                       scld_vec_x,scld_vec_y):
     
     #binerisation
     mask=np.zeros(scaled_pointfield.shape)
@@ -57,6 +59,8 @@ def remove_isolated_px(kdim,kshape,threshold,directory,scaled_pointfield,scld_te
     out_mask = remove_outliers(mask,kdim,kshape)
     
     #application of mask to data
+    scld_count_mskd = np.multiply(scaled_pointfield, out_mask)
+    
     scld_ten_xx_mskd = np.multiply(scld_ten_xx , out_mask)
     scld_ten_xy_mskd = np.multiply(scld_ten_xy , out_mask)
     scld_ten_yx_mskd = np.multiply(scld_ten_yx , out_mask)
@@ -64,6 +68,8 @@ def remove_isolated_px(kdim,kshape,threshold,directory,scaled_pointfield,scld_te
     
     scld_vec_x_mskd = np.multiply(scld_vec_x , out_mask)
     scld_vec_y_mskd = np.multiply(scld_vec_y , out_mask)
+    
+    tif.imsave(directory+'/scld_count_mskd.tif', np.int32(scld_count_mskd).T)
     
     tif.imsave(directory+'/scld_vec_x_mskd.tif',np.int32(scld_vec_x_mskd).T)
     tif.imsave(directory+'/scld_vec_y_mskd.tif',np.int32(scld_vec_y_mskd).T)
@@ -76,11 +82,15 @@ def remove_isolated_px(kdim,kshape,threshold,directory,scaled_pointfield,scld_te
     mask=[]
     out_mask=[]
     
-    return scld_ten_xx_mskd,scld_ten_xy_mskd,scld_ten_yx_mskd,scld_ten_yy_mskd,scld_vec_x_mskd,scld_vec_y_mskd
+    return scld_count_mskd,scld_ten_xx_mskd,scld_ten_xy_mskd,scld_ten_yx_mskd,\
+scld_ten_yy_mskd,scld_vec_x_mskd,scld_vec_y_mskd
 
 if __name__ == "__main__":
     threshold = 5
     kdim=3
     kshape='box'
-    scld_ten_xx_mskd,scld_ten_xy_mskd,scld_ten_yx_mskd,scld_ten_yy_mskd,scld_vec_x_mskd, \
-    scld_vec_y_mskd=remove_isolated_px(kdim,kshape,threshold,directory,scaled_pointfield,scld_ten_xx,scld_ten_xy,scld_ten_yx,scld_ten_yy,scld_vec_x,scld_vec_y)
+    scld_count_mskd,scld_ten_xx_mskd,scld_ten_xy_mskd,scld_ten_yx_mskd,\
+    scld_ten_yy_mskd,scld_vec_x_mskd,scld_vec_y_mskd=\
+    remove_isolated_px(kdim,kshape,threshold,directory,scaled_pointfield,
+                       scld_ten_xx,scld_ten_xy,scld_ten_yx,scld_ten_yy,
+                       scld_vec_x,scld_vec_y)

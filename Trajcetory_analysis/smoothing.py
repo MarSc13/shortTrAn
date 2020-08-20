@@ -100,18 +100,29 @@ def average_box_filter(data, scaled_pointfield, kdim, outliers, mode_outliers):
 
 
 '''Uses at the moment a for the entries wheigted average filter to smooth the signal to the neighbouring pixels'''    
-def smoothing(kdim_smoothing,wdth_outliers,mode_outliers,directory,scaled_pointfield,scld_vec_x_mskd, scld_vec_y_mskd,scld_ten_xx_mskd,scld_ten_xy_mskd,scld_ten_yx_mskd,scld_ten_yy_mskd):
+def smoothing(kdim_smoothing,wdth_outliers,mode_outliers,directory,scaled_pointfield,
+              scld_count_mskd,scld_vec_x_mskd, scld_vec_y_mskd,scld_ten_xx_mskd,
+              scld_ten_xy_mskd,scld_ten_yx_mskd,scld_ten_yy_mskd):
     
     #application of the smoothing filter
-    scld_vec_x_fil = average_box_filter(scld_vec_x_mskd,scaled_pointfield,kdim_smoothing,wdth_outliers,mode_outliers)
-    scld_vec_y_fil = average_box_filter(scld_vec_y_mskd,scaled_pointfield,kdim_smoothing,wdth_outliers,mode_outliers)
+    scld_count_fil = average_box_filter(scld_count_mskd,scaled_pointfield,\
+                                        kdim_smoothing,wdth_outliers,mode_outliers)
+    scld_vec_x_fil = average_box_filter(scld_vec_x_mskd,scaled_pointfield,\
+                                        kdim_smoothing,wdth_outliers,mode_outliers)
+    scld_vec_y_fil = average_box_filter(scld_vec_y_mskd,scaled_pointfield,\
+                                        kdim_smoothing,wdth_outliers,mode_outliers)
     
-    scld_ten_xx_fil = average_box_filter(scld_ten_xx_mskd,scaled_pointfield,kdim_smoothing,wdth_outliers,mode_outliers)
-    scld_ten_xy_fil = average_box_filter(scld_ten_xy_mskd,scaled_pointfield,kdim_smoothing,wdth_outliers,mode_outliers)
-    scld_ten_yx_fil = average_box_filter(scld_ten_yx_mskd,scaled_pointfield,kdim_smoothing,wdth_outliers,mode_outliers)
-    scld_ten_yy_fil = average_box_filter(scld_ten_yy_mskd,scaled_pointfield,kdim_smoothing,wdth_outliers,mode_outliers)    
+    scld_ten_xx_fil = average_box_filter(scld_ten_xx_mskd,scaled_pointfield,\
+                                         kdim_smoothing,wdth_outliers,mode_outliers)
+    scld_ten_xy_fil = average_box_filter(scld_ten_xy_mskd,scaled_pointfield,\
+                                         kdim_smoothing,wdth_outliers,mode_outliers)
+    scld_ten_yx_fil = average_box_filter(scld_ten_yx_mskd,scaled_pointfield,\
+                                         kdim_smoothing,wdth_outliers,mode_outliers)
+    scld_ten_yy_fil = average_box_filter(scld_ten_yy_mskd,scaled_pointfield,\
+                                         kdim_smoothing,wdth_outliers,mode_outliers)    
     
     #saving
+    tif.imsave(directory+'/scld_count_fil.tif',scld_count_fil.T)
     tif.imsave(directory+'/scld_vec_x_fil.tif',scld_vec_x_fil.T) 
     tif.imsave(directory+'/scld_vec_y_fil.tif',scld_vec_y_fil.T)
     
@@ -120,7 +131,8 @@ def smoothing(kdim_smoothing,wdth_outliers,mode_outliers,directory,scaled_pointf
     tif.imsave(directory+'/scld_ten_yx_fil.tif',scld_ten_yx_fil.T)
     tif.imsave(directory+'/scld_ten_yy_fil.tif',scld_ten_yy_fil.T)
     
-    return scld_vec_x_fil,scld_vec_y_fil,scld_ten_xx_fil,scld_ten_xy_fil,scld_ten_yx_fil,scld_ten_yy_fil
+    return scld_count_fil,scld_vec_x_fil,scld_vec_y_fil,scld_ten_xx_fil,\
+scld_ten_xy_fil,scld_ten_yx_fil,scld_ten_yy_fil
 
 if __name__ == "__main__":
     kdim_smoothing = 3 #kernel dimension
@@ -128,16 +140,19 @@ if __name__ == "__main__":
     mode_outliers = 'gauss' # or 'remove'
     #data
     path= '/Users/marieschwebs/Documents/GitHub/EvalTrc/smoothing_examp/'
+    filename = '/results_filtering'
     scaled_pointfield=tif.imread(path +'scaled_pointfield.tif').T # did not perfom the transposion yet
-    scld_ten_xx_mskd=tif.imread(path+'scld_ten_xx_mskd.tif')
-    scld_ten_xy_mskd=tif.imread(path+'scld_ten_xy_mskd.tif')
-    scld_ten_yx_mskd=tif.imread(path+'scld_ten_yx_mskd.tif')
-    scld_ten_yy_mskd=tif.imread(path+'scld_ten_yy_mskd.tif')
-    scld_vec_x_mskd=tif.imread(path+'scld_vec_x_mskd.tif')
-    scld_vec_y_mskd=tif.imread(path+'scld_vec_y_mskd.tif')
+    scld_count_mskd=tif.imread(path+filename+'/scld_count_mskd.tif')
+    scld_ten_xx_mskd=tif.imread(path+filename+'scld_ten_xx_mskd.tif')
+    scld_ten_xy_mskd=tif.imread(path+filename+'scld_ten_xy_mskd.tif')
+    scld_ten_yx_mskd=tif.imread(path+filename+'scld_ten_yx_mskd.tif')
+    scld_ten_yy_mskd=tif.imread(path+filename+'scld_ten_yy_mskd.tif')
+    scld_vec_x_mskd=tif.imread(path+filename+'scld_vec_x_mskd.tif')
+    scld_vec_y_mskd=tif.imread(path+filename+'scld_vec_y_mskd.tif')
     #directory to save results
     directory= '/Users/marieschwebs/Documents/GitHub/EvalTrc/smoothing_examp/'
     
-    scld_vec_x_fil,scld_vec_y_fil,scld_ten_xx_fil,scld_ten_xy_fil,scld_ten_yx_fil,scld_ten_yy_fil=\
-    smoothing(kdim_smoothing,wdth_outliers,mode_outliers,directory,scaled_pointfield,scld_vec_x_mskd, 
-              scld_vec_y_mskd,scld_ten_xx_mskd,scld_ten_xy_mskd,scld_ten_yx_mskd,scld_ten_yy_mskd)
+    scld_count_fil,scld_vec_x_fil,scld_vec_y_fil,scld_ten_xx_fil,scld_ten_xy_fil,scld_ten_yx_fil,scld_ten_yy_fil=\
+    smoothing(kdim_smoothing,wdth_outliers,mode_outliers,directory,scaled_pointfield,
+              scld_count_mskd,scld_vec_x_mskd, scld_vec_y_mskd,scld_ten_xx_mskd,
+              scld_ten_xy_mskd,scld_ten_yx_mskd,scld_ten_yy_mskd)
