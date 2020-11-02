@@ -64,6 +64,8 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
         heights_scal=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         angle=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         pix_max=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
+        ellipticity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
+        eccentricity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         
         Y,X = np.mgrid[0:ten_xx.shape[0], 0:ten_xx.shape[1]]
         XY = np.column_stack((X.ravel(), Y.ravel()))
@@ -108,19 +110,23 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
         
         
         
-        '''Determination of the max value for colorcode and colorbar'''
+        '''Determination of the max value for colorcode and colorbar + determination ellipticity'''
         for f in range(ten_xx.shape[0]): 
             for g in range(ten_xx.shape[1]):
                 if widths[f,g] < heights[f,g]:
                     pix_max[f,g] = heights[f,g]
+                    ellipticity[f,g] = np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)
+                    eccentricity[f,g] = np.sqrt(1 - np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)**2)
                 else:
                     pix_max[f,g] = widths[f,g]
-        
-        ellipticity = np.divide(widths,heights,out=np.zeros_like(widths), where=heights!=0)
+                    ellipticity[f,g] = np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)
+                    eccentricity[f,g] = np.sqrt(1 - np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)**2)
+
         
         np.save(resultpath + '/Info/Angle/angle_cell_' + str(i) + '.npy', angle)
         np.save(resultpath + '/Info/DiffCoeffPx/diffcoeff_px_cell_' + str(i) + '.npy', pix_max)
         np.save(resultpath + '/Info/Ellipticity/ellipticity_cell_' + str(i) + '.npy', ellipticity)
+        np.save(resultpath + '/Info/Ellipticity/eccentricity_cell_' + str(i) + '.npy', eccentricity)
         
         '''Following lines were inserted to count the batches more easily'''
 #        widths_scal[pix_max >= 0.45] = 0

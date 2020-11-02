@@ -285,17 +285,24 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
         widths, heights, heights_scal, widths_scal, angle = \
         calc_eigenValVec(ten_xx, ten_xy,ten_yx, ten_yy)
         
+        ellipticity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
+        eccentricity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         
-        '''Determination of the max value for colorcode and colorbar'''
+        '''Determination of the max value for colorcode and colorbar + ellipticity 
+        + eccentricity'''
         for f in range(ten_xx.shape[0]): 
             for g in range(ten_xx.shape[1]):
                 if widths[f,g] < heights[f,g]:
                     pix_max[f,g] = heights[f,g]
+                    ellipticity[f,g] = np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)
+                    eccentricity[f,g] = np.sqrt(1 - np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)**2)
                 else:
                     pix_max[f,g] = widths[f,g]
+                    ellipticity[f,g] = np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)
+                    eccentricity[f,g] = np.sqrt(1 - np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)**2)
+
                     
                     
-        ellipticity = np.divide(widths,heights,out=np.zeros_like(widths), where=heights!=0)
         
         np.save(resultpath + '/Info/Angle/angle_cell_' + str(i) + '.npy', angle)
         np.save(resultpath + '/Info/DiffCoeffPx/diffcoeff_px_cell_' + str(i) + '.npy', pix_max)
