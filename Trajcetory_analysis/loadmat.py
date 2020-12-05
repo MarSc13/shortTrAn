@@ -11,7 +11,7 @@ import tifffile as tif
 """loads input file and sets the scale to 1nm"""
 
 def loadmat_file(path):  
-    traces = sio.loadmat(path)
+    traces = sio.loadmat(path,scale)
     for key in traces:
         1+1
     tracs = traces[key]
@@ -19,8 +19,7 @@ def loadmat_file(path):
     tracs = np.array(tracs)
     a = tracs.shape[0] #number of rows = total entries of poistions
     b = tracs.shape[1] #number of columns, used to extract later on to extract x and y positions 
-    """ nm Skalierung deswegen 160 """
-    scale=160
+    """ Convertion to 1 nm scaling """
     tracs[0:a, 2:4] = tracs[0:a, 2:4]*scale # scales to nm
 
     #tracs_unint16 = np.uint16(tracs) #reduction of datatype
