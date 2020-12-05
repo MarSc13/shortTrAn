@@ -126,9 +126,16 @@ def HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline, entr, colo
     plt.close(fig1)
 
     
-    '''Generation of an speed heat map with the final unit of mum/s'''       
+    '''Generation of an speed heat map with the final unit of mum/s'''
+    plt.rcParams['image.cmap'] = 'RdPu' # changes current colorbar
+    #mask array to assign pixels with entry 0 to white color
+    img_l_mask = np.ma.array(img_l, mask=(img_l == 0))
+    #assign zero to white color in current colormap
+    current_cmap = plt.cm.get_cmap()
+    current_cmap.set_bad(color='white')
+       
     fig2 = plt.figure()
-    plt.imshow(img_l,cmap='RdPu')
+    plt.imshow(img_l_mask)
     plt.xticks([])
     plt.yticks([])
     cbar=plt.colorbar()    
@@ -265,6 +272,7 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
                 elif angle_degpar>225 and angle_degpar<=315:
                     angle[a,b]=4
                            
+        np.save(resultpath+'AngleSpeed_Cell'+str(i)+'.npy', angle_deg) 
         
         '''Genration of the black white colormap used by the quiver plot'''
         binary = cm.get_cmap('binary', 256)
