@@ -81,7 +81,7 @@ def extraction_fp_region(entr, outline, px_extent, widths_scal, heights_scal, an
           
     #find ind to extract section from whole arrays
     fp_ext[0,0] = round(np.amin(entr[:,0])) - px_extent #always round down
-    fp_ext[0,1] = round(np.amax(entr[:,0])) + px_extent#always round up
+    fp_ext[0,1] = round(np.amax(entr[:,0])) + px_extent #always round up
     fp_ext[1,0] = round(np.amin(entr[:,1])) - px_extent
     fp_ext[1,1] = round(np.amax(entr[:,1])) + px_extent
     
@@ -307,6 +307,7 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
         np.save(resultpath + '/Info/Angle/angle_cell_' + str(i) + '.npy', angle)
         np.save(resultpath + '/Info/DiffCoeffPx/diffcoeff_px_cell_' + str(i) + '.npy', pix_max)
         np.save(resultpath + '/Info/Ellipticity/ellipticity_cell_' + str(i) + '.npy', ellipticity)
+        np.save(resultpath + '/Info/Ellipticity/eccentricity_cell_' + str(i) + '.npy', eccentricity)
         
 
         '''Load points to draw outline in map'''
