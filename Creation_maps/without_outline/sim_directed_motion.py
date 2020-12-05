@@ -65,7 +65,7 @@ def directed_motion(path,filename,resultpath,binning,N):
                 elif angle_degpar>225 and angle_degpar<=315:
                     angle[a,b]=4
                     
-
+        np.save(resultpath+'AngleSpeed_Cell'+str(i)+'.npy', angle_deg)            
         
         '''Generation for the grid of the whole picture. 0/0 is in the upper 
         left corner'''
