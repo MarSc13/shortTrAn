@@ -10,8 +10,8 @@ import scipy.io as sio
 import tifffile as tif
 """loads input file and sets the scale to 1nm"""
 
-def loadmat_file(path):  
-    traces = sio.loadmat(path,scale)
+def loadmat_file(path,scale):  
+    traces = sio.loadmat(path)
     for key in traces:
         1+1
     tracs = traces[key]
@@ -53,4 +53,4 @@ def loadmat_file(path):
 if __name__ == "__main__":
     N=1
     path = ('/Users/marieschwebs/Desktop/TrackingVSGAtto/Trc/Input_data/trc'+str(N))
-    a,b,tracs,tracs_unint16,trac_num,counts,tracs_unint16corr,trac_numcorr,dt = loadmat_file(path)
+    a,b,tracs,tracs_unint16,trac_num,counts,tracs_unint16corr,trac_numcorr,dt = loadmat_file(path,scale)
