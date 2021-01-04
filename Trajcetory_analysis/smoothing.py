@@ -73,7 +73,9 @@ def average_box_filter(data, scaled_pointfield, kdim, outliers, mode_outliers):
         dist_ar = ndimage.distance_transform_cdt(out)
         dist_ar = dist_ar[2:r+2,2:c+2]
         
-        sigma_div = 1 #radius of gaussianfilter is 4 px with sigma 1
+        sigma_div = 1.5 #radius of gaussianfilter is 4 px with sigma 1
+         #gaussianfilter_1D make the radius of the filter equal to truncate standard deviations
+         #lw = int(truncate * sd + 0.5) #+0.5 for correct rounding
         gaus_data= ndimage.gaussian_filter(smoothed_data,sigma=sigma_div,mode='constant',cval=0)
         #generation of mask for the structure center
         rim_mask = np.ones((dist_ar.shape[0],dist_ar.shape[1]))
