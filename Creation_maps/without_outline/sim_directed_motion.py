@@ -15,8 +15,37 @@ from matplotlib import cm
 from math import atan2,degrees
 import os
 
+'''relative and absolute maximum error associated with the velocity
+compared with http://davbohn.userpage.fu-berlin.de/physcalc/'''
+def create_rerr_array(array_x, array_y, array_speed, sigma):
+    relErr_Velocity = np.zeros(array_speed.shape) #preinit
+    absErr_Velocity = np.zeros(array_speed.shape)
+    for a in range(array_speed.shape[0]):#iteration over lines
+        for b in range(array_speed.shape[1]): #iteration over columns
+            if array_speed[a,b] !=0: #divides only when array !=0 else 0
+                 # v = sqrt(v_x^2+v_y^2)
+                 # first calculate the error associated with v_x^2 (i) and v_y^2 (ii)
+                 # note: v = deltax/t with deltax = deltax +/- 2sigma
+                 # error of square: a = b^2 -> delta a = 2* delta b/b *a
+                if array_x[a,b] !=0:
+                    err_1 = 2*(2*sigma/abs(array_x[a,b]))*array_x[a,b]**2
+                else:
+                    err_1 = 0
+                if array_y[a,b] !=0:
+                    err_2 = 2*(2*sigma/abs(array_y[a,b]))*array_y[a,b]**2
+                else:
+                    err_2 = 0
+                # sum of iii = i + ii
+                # c = a+b -> delta c = delta a + delta b;
+                err_sum = err_1 + err_2;
+                # sqrt(iii)
+                # c = sqrt(a) -> delta c = 1/2* delta a/a *c;
+                relErr_Velocity[a,b] = 1/2* err_sum/(array_x[a,b]**2+array_y[a,b]**2);
+                absErr_Velocity[a,b] = 1/2* err_sum/(array_x[a,b]**2+array_y[a,b]**2) * np.sqrt(array_x[a,b]**2+array_y[a,b]**2);
+    return relErr_Velocity, absErr_Velocity   
 
-def directed_motion(path,filename,resultpath,binning,N):
+'''main function'''
+def directed_motion(path,filename,resultpath,binning,sigma,t_lag,N,errcorr):
     
     #Generation of the resultfolder
     if not os.path.exists(resultpath+'/DirectedMotionMaps'):
@@ -24,6 +53,14 @@ def directed_motion(path,filename,resultpath,binning,N):
             resultpath = resultpath+'/DirectedMotionMaps/'
     else:
             resultpath = resultpath+'/DirectedMotionMaps/'
+            
+    #Generation of folder for informations      
+    if not os.path.exists(resultpath+'/Info'):
+            os.mkdir(resultpath+'/Info')
+            os.mkdir(resultpath+'/Info/Angle')
+            os.mkdir(resultpath+'/Info/Speed')
+            if errcorr == 'Yes' or errcorr == 'yes':
+                os.mkdir(resultpath+'/Info/RelErr')
     
     speed_info=np.zeros((N+2,3)) #Nx2 array: first columns maximum, 
     #second column average, two additional rows to seperate the calculated 
@@ -41,6 +78,7 @@ def directed_motion(path,filename,resultpath,binning,N):
         motion within an pixel'''
         img_x = tif.imread(directory+'scld_vec_x_fil.tif')
         img_y = tif.imread(directory+'scld_vec_y_fil.tif')
+        count_fil = tif.imread(directory+'scld_count_fil.tif')
         
         img_l = np.sqrt(img_x**2 + img_y**2)
         angle=np.zeros((img_x.shape[0],img_x.shape[1]))
@@ -65,7 +103,17 @@ def directed_motion(path,filename,resultpath,binning,N):
                 elif angle_degpar>225 and angle_degpar<=315:
                     angle[a,b]=4
                     
-        np.save(resultpath+'AngleSpeed_Cell'+str(i)+'.npy', angle_deg)            
+        tif.imsave(resultpath+'/Info/Angle/AngleSpeed_Cell'+str(i)+'.tif', angle_deg)            
+        
+        if errcorr == 'Yes' or errcorr == 'yes':
+            '''Generation of the errormap'''
+            sigma_dt = sigma/t_lag
+            relErr, absErr = create_rerr_array(img_x, img_y, img_l, sigma_dt)
+            count_sqrt = np.sqrt(count_fil)
+            relErr = np.divide(relErr, count_sqrt, out=np.zeros_like(relErr), where=count_sqrt!=0)
+            absErr = np.divide(absErr, count_sqrt, out=np.zeros_like(absErr), where=count_sqrt!=0)
+            tif.imsave(resultpath + '/Info/RelErr/rel_error_cell' + str(i) + '.tif',relErr)
+            tif.imsave(resultpath + '/Info/RelErr/abs_error_cell' + str(i) + '.tif',absErr)
         
         '''Generation for the grid of the whole picture. 0/0 is in the upper 
         left corner'''
@@ -100,10 +148,18 @@ def directed_motion(path,filename,resultpath,binning,N):
         plt.xticks([])
         plt.yticks([])
         plt.imshow(img_l, cmap='binary', alpha=.01)
-        tif.imsave(resultpath+'Speed_Cell'+str(i), img_l)
-        plt.savefig(resultpath+'DirectionSpeed_Cell'+str(i), dpi=300)   
+        tif.imsave(resultpath+'/Info/Speed/Speed_Cell'+str(i)+'.tif', img_l)
+        plt.savefig(resultpath+'QuiverPlotSpeed_Cell'+str(i)+'.png', dpi=300)
+        plt.close(fig1)
         
-        '''Generation of an speed heat map with the final unit of mum/s'''       
+        '''Generation of an speed heat map with the final unit of mum/s''' 
+        plt.rcParams['image.cmap'] = 'RdPu' # changes current colorbar
+        #mask array to assign pixels with entry 0 to white color
+        img_l_mask = np.ma.array(img_l, mask=(img_l == 0))
+        #assign zero to white color in current colormap
+        current_cmap = plt.cm.get_cmap()
+        current_cmap.set_bad(color='white')
+        
         fig2 = plt.figure()
 #        plt.axis('equal')
         plt.imshow(img_l,cmap='RdPu')
@@ -112,7 +168,29 @@ def directed_motion(path,filename,resultpath,binning,N):
 #        plt.show()
         cbar=plt.colorbar()
         cbar.set_label('µm/s')
-        plt.savefig(resultpath+'HeatMap_Cell'+str(i), dpi=300)
+        plt.savefig(resultpath+'HeatMap_Cell'+str(i)+'.png', dpi=300)
+        plt.close(fig2)
+        
+        
+        if errcorr == 'Yes' or errcorr == 'yes':
+            '''Generation of the rel_err heat map'''
+            relErr[relErr > 1] = 1 #apply thres for better resol in map
+            
+            plt.rcParams['image.cmap'] = 'viridis' # changes current colorbar
+            #mask array to assign pixels with entry 0 to white color
+            relErr_mask = np.ma.array(relErr, mask=(relErr == 0))
+            #assign zero to white color in current colormap
+            current_cmap = plt.cm.get_cmap()
+            current_cmap.set_bad(color='white')
+    
+            fig3 = plt.figure()
+            plt.imshow(relErr_mask)
+            plt.xticks([])
+            plt.yticks([])
+            cbar = plt.colorbar()
+            cbar.set_label('relative error')
+            plt.savefig(resultpath + 'RelErrMap_Cell' + str(i) + '.png', dpi = 300)
+            plt.close(fig3)
         
         
         maximum = img_l.max()
@@ -127,14 +205,17 @@ def directed_motion(path,filename,resultpath,binning,N):
         speed_info[-1,1] = np.mean(speed_info[0:-2,1])
         speed_info[-1,2] = np.mean(speed_info[0:-2,2])
     
-    np.save(resultpath+'Speed_info_all_bin'+str(binning),speed_info)
+    tif.imsave(resultpath+'/Info/Speed/Speed_info_all_bin'+str(binning)+'.tif',speed_info)
 
 if __name__ == "__main__":
     N = 20 #number to be evaluated cells
     binning = 160 #binning to x nm
+    sigma = 25 #nm
+    t_lag = 10 #ms
+    errcorr = 'Yes' # 'Yes' or 'No'
     resultpath = '/Users/marieschwebs/Desktop/TrackingVSGAtto/Trc/Analysis_maps/Maps_160'
     path='/Users/marieschwebs/Desktop/TrackingVSGAtto/Trc/Results_Par_testing/Trc'
     filename = '/Binning_'+str(binning)+\
     '/results_filtering/'
     #directory = '/home/mas32ea/Schreibtisch/Drift_and_Diffusion_Pad/TrackingVSGAtto/Trc/Trc_thresh2/Trc'+str(N)+'/'
-    directed_motion(path,filename,resultpath,binning,N)
+    directed_motion(path,filename,resultpath,binning,sigma,t_lag,N,errcorr)

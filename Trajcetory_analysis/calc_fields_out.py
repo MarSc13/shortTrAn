@@ -42,11 +42,30 @@ def create_tensorfield(array_x,array_y,diff_array_x,diff_array_y,tensorfield,dt)
         tensorfield[array_x[i]][array_y[i]]=tensorfield[array_x[i]][array_y[i]] + (diff_array_x[i]*diff_array_y[i]) / dt
     return tensorfield
 
+'''Filles the tensor map and corrects for the stat and dyn localization error'''
+def create_tensorfield_errcorr(array_x,array_y,diff_array_x,diff_array_y,tensorfield,dt, t_exp, sigma):
+    for i in range(diff_array_x.shape[0]):
+        diff_loc = diff_array_x[i]*diff_array_y[i]
+        if diff_loc < 0:
+            a = -1
+        else:
+            a = 1
+        diff_loc = np.multiply(diff_loc,a)            
+        diff_loc = diff_loc - (4 * sigma**2)
+        diff_loc =  diff_loc / (dt - ((1/3)*(t_exp/dt)*t_exp))
+        if diff_loc <= 0:
+            diff_loc = 0
+        else:
+            diff_loc = np.multiply(diff_loc,a)
+        tensorfield[array_x[i]][array_y[i]]=tensorfield[array_x[i]][array_y[i]] + diff_loc
+    return tensorfield
+
 
 
 """Changes are calculated by firstly determining the differences of pos to pos and then trc for trc. The vectorfields 
 (directed motion) are generated from the velocity arrays and tensorfields (diffusion) are generated from diffarrays"""
-def calc_fields(a,time_lag,path,resultpath,N,pointfield,tracs_unint16corr,trac_numcorr,vectorfield_x,vectorfield_y,
+def calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
+                tracs_unint16corr,trac_numcorr,vectorfield_x,vectorfield_y,
                 tensorfield_xx,tensorfield_xy,tensorfield_yx,tensorfield_yy):
 
     
@@ -107,11 +126,16 @@ def calc_fields(a,time_lag,path,resultpath,N,pointfield,tracs_unint16corr,trac_n
             vectorfield_x = create_vectorfield(x_array_uint16,y_array_uint16,vol_array_x, vectorfield_x)
             vectorfield_y = create_vectorfield(x_array_uint16,y_array_uint16,vol_array_y, vectorfield_y)
         
-        
-            tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag)
-            tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag)
-            tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag)
-            tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag)
+            if errcorr == 'Yes' or errcorr == 'yes':
+                tensorfield_xx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag,time_exp,sigma)
+                tensorfield_xy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag,time_exp,sigma)
+                tensorfield_yx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag,time_exp,sigma)
+                tensorfield_yy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag,time_exp,sigma)
+            else:                   
+                tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag)
+                tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag)
+                tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag)
+                tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag)
             
             
         else:
@@ -143,11 +167,17 @@ def calc_fields(a,time_lag,path,resultpath,N,pointfield,tracs_unint16corr,trac_n
             vectorfield_y = create_vectorfield(x_array_uint16,y_array_uint16,vol_array_y, vectorfield_y)
         
         
-            tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag)
-            tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag)
-            tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag)
-            tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag)
-            
+            if errcorr == 'Yes' or errcorr == 'yes':
+                tensorfield_xx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag,time_exp,sigma)
+                tensorfield_xy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag,time_exp,sigma)
+                tensorfield_yx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag,time_exp,sigma)
+                tensorfield_yy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag,time_exp,sigma)
+            else:                   
+                tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag)
+                tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag)
+                tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag)
+                tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag)
+                
             k=k+1
             
             x_array = np.array([],'float')
@@ -174,6 +204,7 @@ if __name__ == "__main__":
 ##    path = '/home/mas32ea/Schreibtisch/Drift_and_Diffusion_Pad/TrackingVSGAtto/TrcData/trc1'
 #    resultpath = '/home/mas32ea/Schreibtisch/Drift_and_Diffusion_Pad/TrackingVSGAtto/Test'
     directory,tensorfield_xx,tensorfield_xy,tensorfield_yx,tensorfield_yy,vectorfield_x,vectorfield_y\
-    =calc_fields(a,time,path,resultpath,N,pointfield,tracs_unint16corr,trac_numcorr,vectorfield_x,vectorfield_y,
-                tensorfield_xx,tensorfield_xy,tensorfield_yx,tensorfield_yy)
+    =calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
+                 tracs_unint16corr,trac_numcorr,vectorfield_x,vectorfield_y,
+                 tensorfield_xx,tensorfield_xy,tensorfield_yx,tensorfield_yy)
    

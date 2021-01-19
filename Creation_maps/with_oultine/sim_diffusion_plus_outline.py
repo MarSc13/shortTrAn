@@ -192,7 +192,7 @@ def EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \
         plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=0.85)  
         plt.hold
         plt.plot(entr[:,0],entr[:,1], color = col, linewidth=0.85)  
-    plt.savefig(resultpath+'EllipsoidePlot_Cell'+str(i), dpi=300)
+    plt.savefig(resultpath+'EllipsoidePlot_Cell'+str(i)+'.png', dpi=300)
     plt.close(fig)
     
     return
@@ -228,9 +228,9 @@ def EllipsoidePlot_Section(widths_scal_fp, heights_scal_fp, angle_fp, \
     plt.hold
     plt.plot(entr_fp[:,0],entr_fp[:,1], color = 'r', linewidth = 4)
     if size_outline == 2:
-        plt.savefig(resultpath+'Sec_EllipsoidePlot_Cell'+str(i)+'_Sec'+str(sec), dpi=300)
+        plt.savefig(resultpath+'Sec_EllipsoidePlot_Cell'+str(i)+'_Sec'+str(sec)+'.png', dpi=300)
     else:
-        plt.savefig(resultpath+'Sec_EllipsoidePlot_Cell'+str(i)+'_Sec', dpi=300)
+        plt.savefig(resultpath+'Sec_EllipsoidePlot_Cell'+str(i)+'_Sec'+'.png', dpi=300)
     plt.close(fig)
     
     return
@@ -278,6 +278,7 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
         ten_yy = ten_yy/2000
         
         pix_max=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
+        pix_min=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         
         
         '''calc of the eigenvalues and eigenvectors needed for displaying 
@@ -294,20 +295,23 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
             for g in range(ten_xx.shape[1]):
                 if widths[f,g] < heights[f,g]:
                     pix_max[f,g] = heights[f,g]
+                    pix_min[f,g] = widths[f,g]
                     ellipticity[f,g] = np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)
                     eccentricity[f,g] = np.sqrt(1 - np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)**2)
                 else:
                     pix_max[f,g] = widths[f,g]
+                    pix_min[f,g] = heights[f,g]
                     ellipticity[f,g] = np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)
                     eccentricity[f,g] = np.sqrt(1 - np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)**2)
 
                     
                     
         
-        np.save(resultpath + '/Info/Angle/angle_cell_' + str(i) + '.npy', angle)
-        np.save(resultpath + '/Info/DiffCoeffPx/diffcoeff_px_cell_' + str(i) + '.npy', pix_max)
-        np.save(resultpath + '/Info/Ellipticity/ellipticity_cell_' + str(i) + '.npy', ellipticity)
-        np.save(resultpath + '/Info/Ellipticity/eccentricity_cell_' + str(i) + '.npy', eccentricity)
+        tif.imsave(resultpath + '/Info/Angle/angle_cell_' + str(i) + '.tif', angle)
+        tif.imsave(resultpath + '/Info/DiffCoeffPx/diff_maj_px_cell_' + str(i) + '.tif', pix_max)
+        tif.imsave(resultpath + '/Info/DiffCoeffPx/dif_min_px_cell_' + str(i) + '.tif', pix_min)
+        tif.imsave(resultpath + '/Info/Ellipticity/ell_cell_' + str(i) + '.tif', ellipticity)
+        tif.imsave(resultpath + '/Info/Ellipticity/ecc_cell_' + str(i) + '.tif', eccentricity)
         
 
         '''Load points to draw outline in map'''
@@ -432,8 +436,8 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
         diff_info[-1,1]=np.nanmean(diff_info[0:-2,1])
         diff_info[-1,2]=np.nanmean(diff_info[0:-2,2])
     
-    np.save(resultpath+'Diff_info_all_bin'+str(binning),diff_info)
-    np.save(resultpath+'Diff_info_all_sec'+str(binning),diff_info_sec)
+    tif.imsave(resultpath+'/Info/Diff_info_all_bin'+str(binning)+'.tif',diff_info)
+    tif.imsave(resultpath+'/Info/Diff_info_all_sec'+str(binning)+'.tif',diff_info_sec)
     
 if __name__ == "__main__":
     N = 2 #number to be evaluated cells

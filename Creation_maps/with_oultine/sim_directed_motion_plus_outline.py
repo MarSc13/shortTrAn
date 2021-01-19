@@ -18,6 +18,35 @@ import os
 
 
 
+'''relative and absolute maximum error associated with the velocity
+compared with http://davbohn.userpage.fu-berlin.de/physcalc/'''
+def create_rerr_array(array_x, array_y, array_speed, sigma):
+    relErr_Velocity = np.zeros(array_speed.shape) #preinit
+    absErr_Velocity = np.zeros(array_speed.shape)
+    for a in range(array_speed.shape[0]):#iteration over lines
+        for b in range(array_speed.shape[1]): #iteration over columns
+            if array_speed[a,b] !=0: #divides only when array !=0 else 0
+                 # v = sqrt(v_x^2+v_y^2)
+                 # first calculate the error associated with v_x^2 (i) and v_y^2 (ii)
+                 # note: v = deltax/t with deltax = deltax +/- 2sigma
+                 # error of square: a = b^2 -> delta a = 2* delta b/b *a
+                if array_x[a,b] !=0:
+                    err_1 = 2*(2*sigma/abs(array_x[a,b]))*array_x[a,b]**2
+                else:
+                    err_1 = 0
+                if array_y[a,b] !=0:
+                    err_2 = 2*(2*sigma/abs(array_y[a,b]))*array_y[a,b]**2
+                else:
+                    err_2 = 0
+                # sum of iii = i + ii
+                # c = a+b -> delta c = delta a + delta b;
+                err_sum = err_1 + err_2;
+                # sqrt(iii)
+                # c = sqrt(a) -> delta c = 1/2* delta a/a *c;
+                relErr_Velocity[a,b] = 1/2* err_sum/(array_x[a,b]**2+array_y[a,b]**2);
+                absErr_Velocity[a,b] = 1/2* err_sum/(array_x[a,b]**2+array_y[a,b]**2) * np.sqrt(array_x[a,b]**2+array_y[a,b]**2);
+    return relErr_Velocity, absErr_Velocity  
+
 '''function to extract the fp region from the original arrays with with following rescaling of 
 both axis for fp region plots'''
 def extraction_fp_region(entr, outline, img_x, img_y, angle, img_l, px_extent):
@@ -121,8 +150,8 @@ def HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline, entr, colo
         plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=0.85) 
         plt.hold
         plt.plot(entr[:,0],entr[:,1], color = col1)
-    tif.imsave(resultpath+'Speed_Cell'+str(i)+'.tif', img_l)
-    plt.savefig(resultpath+'DirectionSpeed_Cell'+str(i), dpi=300)   
+    tif.imsave(resultpath+'/Info/Speed/Speed_Cell'+str(i)+'.tif', img_l)
+    plt.savefig(resultpath+'QuiverPlotSpeed_Cell'+str(i)+'.png', dpi=300)   
     plt.close(fig1)
 
     
@@ -185,17 +214,17 @@ def HeatMap_QuiverPlot_Section(img_x_fp, img_y_fp, img_l_fp, angle_fp, outline_f
     plt.hold
     plt.plot(entr_fp[:,0],entr_fp[:,1], color = 'r', linewidth=4)
     if size_outline == 2:
-        tif.imsave(resultpath+'Sec_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_l_fp)
-        tif.imsave(resultpath+'Angle_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', angle_fp)
-        tif.imsave(resultpath+'Xpos_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_x_fp)
-        tif.imsave(resultpath+'Ypos_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_y_fp)
-        plt.savefig(resultpath+'Sec_DirectionSpeed_Cell'+str(i)+'Sec'+str(sec), dpi=300)
+        tif.imsave(resultpath+'/Info/Speed/Sec_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_l_fp)
+        tif.imsave(resultpath+'/Info/Angle/Angle_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', angle_fp)
+        tif.imsave(resultpath+'/Info/Speed/Xpos_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_x_fp)
+        tif.imsave(resultpath+'/Info/Speed/Ypos_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_y_fp)
+        plt.savefig(resultpath+'Sec_QuiverPlotSpeed_Cell'+str(i)+'Sec'+str(sec)+'.png', dpi=300)
     else:
-        tif.imsave(resultpath+'Sec_Speed_Cell'+str(i)+'Sec.tif', img_l_fp)
-        tif.imsave(resultpath+'Angle_Speed_Cell'+str(i)+'Sec.tif', angle_fp)
-        tif.imsave(resultpath+'Xpos_Speed_Cell'+str(i)+'Sec.tif', img_x_fp)
-        tif.imsave(resultpath+'Ypos_Speed_Cell'+str(i)+'Sec.tif', img_y_fp)
-        plt.savefig(resultpath+'Sec_DirectionSpeed_Cell'+str(i)+'Sec', dpi=300)   
+        tif.imsave(resultpath+'/Info/Speed/Sec_Speed_Cell'+str(i)+'Sec.tif', img_l_fp)
+        tif.imsave(resultpath+'/Info/Angle/Angle_Speed_Cell'+str(i)+'Sec.tif', angle_fp)
+        tif.imsave(resultpath+'/Info/Speed/Xpos_Speed_Cell'+str(i)+'Sec.tif', img_x_fp)
+        tif.imsave(resultpath+'/Info/Speed/Ypos_Speed_Cell'+str(i)+'Sec.tif', img_y_fp)
+        plt.savefig(resultpath+'Sec_QuiverPlotSpeed_Cell'+str(i)+'Sec.png', dpi=300)   
     plt.close(fig3)
     
     '''Generation of an speed heat map with the final unit of mum/s'''       
@@ -221,11 +250,58 @@ def HeatMap_QuiverPlot_Section(img_x_fp, img_y_fp, img_l_fp, angle_fp, outline_f
     return
 
 
+'''Generates Relative Error map'''
+def HeatMap_RelErr(relErr, outline, entr, resultpath, i):
+    #color scheme for highlighting region wrapped around fp entrance
+    if np.size(outline) == 2:
+        if np.size(outline[0]) == np.size(entr[0]):
+            col1 = 'k'
+        else:
+            col1 = 'r'
+    else:
+        if np.size(outline) == np.size(entr):
+            col1 = 'k'
+        else:
+            col1 = 'r'
+            
+    #tresh for proper distr. of cbar
+    relErr[relErr > 1] = 1 #apply thres for better resol in map and cbar
+
+    plt.rcParams['image.cmap'] = 'viridis' # changes current colorbar
+    #mask array to assign pixels with entry 0 to white color
+    relErr_mask = np.ma.array(relErr, mask=(relErr == 0))
+    #assign zero to white color in current colormap
+    current_cmap = plt.cm.get_cmap()
+    current_cmap.set_bad(color='white')
+
+    fig4 = plt.figure()
+    plt.imshow(relErr_mask)
+    plt.xticks([])
+    plt.yticks([])
+    cbar = plt.colorbar()
+    cbar.set_label('relative error')
+    plt.hold
+    if np.size(outline) == 2:
+        plt.plot(outline[0][:,0],outline[0][:,1], color = 'k', linewidth=0.95) 
+        plt.hold
+        plt.plot(outline[1][:,0],outline[1][:,1], color = 'k', linewidth=0.95) 
+        plt.hold
+        plt.plot(entr[0][:,0],entr[0][:,1], color = col1, linewidth=0.95)
+        plt.hold
+        plt.plot(entr[1][:,0],entr[1][:,1], color = col1, linewidth=0.95)
+    else:
+        plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=0.95) 
+        plt.hold
+        plt.plot(entr[:,0],entr[:,1], color = col1,linewidth=0.95)
+    plt.savefig(resultpath+'RelErrMap_Cell'+str(i), dpi=300)   
+    plt.close(fig4)
+    return
 
 
 
 '''main function: generation of the heat map and the quiver plot of the directed motion'''
-def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, px_extent, N, highlighting):
+def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning,\
+                                 sigma,time_lag,px_extent,N,highlighting,errcorr):
     
     #Generation of the resultfolder
     if not os.path.exists(resultpath+'/DirectedMotionMaps'):
@@ -233,6 +309,14 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
             resultpath = resultpath+'/DirectedMotionMaps/'
     else:
             resultpath = resultpath+'/DirectedMotionMaps/'
+            
+    #Generation of folder for informations      
+    if not os.path.exists(resultpath+'/Info'):
+            os.mkdir(resultpath+'/Info')
+            os.mkdir(resultpath+'/Info/Angle')
+            os.mkdir(resultpath+'/Info/Speed')
+            if errcorr == 'Yes' or errcorr == 'yes':
+                os.mkdir(resultpath+'/Info/RelErr')
     
     speed_info=np.zeros((N+2,3)) #Nx2 array: first columns maximum, 
     #second column average, two additional rows to seperate the calculated 
@@ -248,6 +332,7 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
         motion within an pixel'''
         img_x = tif.imread(directory+'scld_vec_x_fil.tif')
         img_y = tif.imread(directory+'scld_vec_y_fil.tif')
+        count_fil = tif.imread(directory+'scld_count_fil.tif') #used in ll 359
         
         
         img_l = np.sqrt(img_x**2 + img_y**2)
@@ -272,7 +357,7 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
                 elif angle_degpar>225 and angle_degpar<=315:
                     angle[a,b]=4
                            
-        np.save(resultpath+'AngleSpeed_Cell'+str(i)+'.npy', angle_deg) 
+        tif.imsave(resultpath+'/Info/Angle/AngleSpeed_Cell'+str(i)+'.tif', angle_deg) 
         
         '''Genration of the black white colormap used by the quiver plot'''
         binary = cm.get_cmap('binary', 256)
@@ -290,6 +375,16 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
         if highlighting == 'Yes':
             entr = np.load(outline_path + '/entr_highl_cell' + str(i) + '.npy')
         size_outline = np.size(outline)
+        
+        if errcorr == 'Yes' or errcorr == 'yes':
+            '''calculation of the relErr absErr arrays'''
+            sigma_dt = sigma/time_lag
+            relErr, absErr = create_rerr_array(img_x, img_y, img_l, sigma_dt)
+            count_sqrt = np.sqrt(count_fil)
+            relErr = np.divide(relErr, count_sqrt, out=np.zeros_like(relErr), where=count_sqrt!=0)
+            absErr = np.divide(absErr, count_sqrt, out=np.zeros_like(absErr), where=count_sqrt!=0)
+            tif.imsave(resultpath + '/Info/RelErr/rel_error_cell' + str(i) + '.tif',relErr)
+            tif.imsave(resultpath + '/Info/RelErr/abs_error_cell' + str(i) + '.tif',absErr)
         
         
         if size_outline == 2:
@@ -311,6 +406,10 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
                 HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline,\
                                              entr, wbmap, resultpath, i)
                 
+                if errcorr == 'Yes' or errcorr == 'yes':
+                    '''Generates relative error map for the whole cell'''
+                    HeatMap_RelErr(relErr, outline, entr, resultpath, i)    
+                    
                 sec = 1 #serves as input parameter for saving the first section plot
                 
                 '''Generates quiver plot and heat map for the section surrounding the first fp entrance'''
@@ -347,7 +446,10 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
                 '''Generates quiver plot and heat map fpr the whole cell'''
                 HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline,\
                                              outline, wbmap, resultpath, i)
-            
+                
+                if errcorr == 'Yes' or errcorr == 'yes':
+                    '''Generates relative error map for the whole cell'''
+                    HeatMap_RelErr(relErr, outline, outline, resultpath, i)
             
             
         else:
@@ -359,7 +461,10 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
                 '''Generates quiver plot and heat map fpr the whole cell'''
                 HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline,\
                                              entr, wbmap, resultpath, i)
-    
+                
+                '''Generates relative error map for the whole cell'''
+                HeatMap_RelErr(relErr, outline, entr, resultpath, i)
+                
                 sec = 1 #serves as input parameter for saving the section plot
     
                 '''Generates quiver plot and heat map for the section surrounding the fp entrance'''
@@ -385,7 +490,10 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
                 '''Generates quiver plot and heat map fpr the whole cell'''
                 HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline,\
                                              outline, wbmap, resultpath, i)
-    
+                 
+                if errcorr == 'Yes' or errcorr == 'yes':
+                    '''Generates relative error map for the whole cell'''
+                    HeatMap_RelErr(relErr, outline, outline, resultpath, i)
             
         
         maximum = np.nanmax(img_l)
@@ -400,8 +508,8 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning, 
         speed_info[-1,1] = np.nanmean(speed_info[0:-2,1])
         speed_info[-1,2] = np.nanmean(speed_info[0:-2,2])
     
-    np.save(resultpath+'Speed_info_all_bin'+str(binning),speed_info)
-    np.save(resultpath+'Speed_info_all_sec'+str(binning),speed_info_sec)
+    tif.imsave(resultpath+'/Info/Speed/Speed_info_all_bin'+str(binning)+'.tif',speed_info)
+    tif.imsave(resultpath+'/Info/Speed/Speed_info_all_sec'+str(binning)+'.tif',speed_info_sec)
     
 if __name__ == "__main__":
     N = 2 #number to be evaluated cells
@@ -413,4 +521,5 @@ if __name__ == "__main__":
     outline_path = '/Volumes/Reindeer/TrackingVSGAtto/MORN/CoorOutlineCorrected'
     highlighting = 'Yes'
     #directory = '/home/mas32ea/Schreibtisch/Drift_and_Diffusion_Pad/TrackingVSGAtto/Trc/Trc_thresh2/Trc'+str(N)+'/'
-    directed_motion_plus_outline(path,filename,outline_path,resultpath,binning,px_extent,N,highlighting)
+    directed_motion_plus_outline(path,filename,outline_path,resultpath,binning,\
+                                 sigma,time_lag,px_extent,N,highlighting,errcorr)
