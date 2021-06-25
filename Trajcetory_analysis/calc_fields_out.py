@@ -26,8 +26,9 @@ def create_diff_array(array):
     return diff_array
 
 '''Creates a matrix(table) containg the change in speed over the time for the x and y pos'''
-def create_vol_array(array, dt):
-    array = np.divide(array, dt)    
+def create_vol_array(array, diff_array, dt):
+    t_array = np.multiply(diff_array,dt)
+    array = np.divide(array, t_array)    
     return array
 
 '''Fills the speed map'''
@@ -37,27 +38,31 @@ def create_vectorfield(array_x,array_y,vol_array,vectorfield):
     return vectorfield
 
 '''Filles the tensor map'''
-def create_tensorfield(array_x,array_y,diff_array_x,diff_array_y,tensorfield,dt):
+def create_tensorfield(array_x,array_y,diff_array_x,diff_array_y,diff_array_t,tensorfield,dt):
     for i in range(diff_array_x.shape[0]):
-        tensorfield[array_x[i]][array_y[i]]=tensorfield[array_x[i]][array_y[i]] + (diff_array_x[i]*diff_array_y[i]) / dt
+        diff_array_dt = np.multiply(diff_array_t[i],dt)
+        tensorfield[array_x[i]][array_y[i]]=tensorfield[array_x[i]][array_y[i]] + (diff_array_x[i]*diff_array_y[i]) / diff_array_dt
     return tensorfield
 
 '''Filles the tensor map and corrects for the stat and dyn localization error'''
-def create_tensorfield_errcorr(array_x,array_y,diff_array_x,diff_array_y,tensorfield,dt, t_exp, sigma):
+def create_tensorfield_errcorr(array_x,array_y,diff_array_x,diff_array_y, diff_array_t,tensorfield, dt, t_exp, sigma):
     for i in range(diff_array_x.shape[0]):
-        diff_loc = diff_array_x[i]*diff_array_y[i]
-        if diff_loc < 0:
+        
+        diff_array_dt = np.multiply(diff_array_t[i],dt)       
+             
+        sdp = diff_array_x[i]*diff_array_y[i] # square displacement
+        if sdp < 0:
             a = -1
         else:
             a = 1
-        diff_loc = np.multiply(diff_loc,a)            
-        diff_loc = diff_loc - (4 * sigma**2)
-        diff_loc =  diff_loc / (dt - ((1/3)*(t_exp/dt)*t_exp))
-        if diff_loc <= 0:
-            diff_loc = 0
+        sdp = np.multiply(sdp,a)            
+        sdp = sdp - (2 * sigma**2)
+        sdp =  sdp / (diff_array_dt - ((1/3)*(t_exp/diff_array_dt)*t_exp))
+        if sdp <= 0: # if correction yields negativ result --> no diff present
+            sdp = 0
         else:
-            diff_loc = np.multiply(diff_loc,a)
-        tensorfield[array_x[i]][array_y[i]]=tensorfield[array_x[i]][array_y[i]] + diff_loc
+            sdp = np.multiply(sdp,a)
+        tensorfield[array_x[i]][array_y[i]]=tensorfield[array_x[i]][array_y[i]] + sdp
     return tensorfield
 
 
@@ -85,6 +90,7 @@ def calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
 
     x_array = np.array([],'float')
     y_array = np.array([],'float')
+    t_array = np.array([],'float')
     
     k=0
     
@@ -94,11 +100,13 @@ def calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
         if tracs_unint16corr[0:a,0][i] == trac_numcorr[k] and i < tracs_unint16corr.shape[0]-1: 
             x_array = np.concatenate((x_array,np.array([tracs_unint16corr[0:a,2][i]])))
             y_array = np.concatenate((y_array,np.array([tracs_unint16corr[0:a,3][i]])))
+            t_array = np.concatenate((t_array,np.array([tracs_unint16corr[0:a,1][i]])))
         
         #concatenates the last x or y pos and saves each trajectory respectively, generates for each trajectory the speed map and tensor map
         elif tracs_unint16corr[0:a,0][i] == trac_numcorr[k] and i == tracs_unint16corr.shape[0]-1: 
             x_array = np.concatenate((x_array,np.array([tracs_unint16corr[0:a,2][i]])))
             y_array = np.concatenate((y_array,np.array([tracs_unint16corr[0:a,3][i]])))
+            t_array = np.concatenate((t_array,np.array([tracs_unint16corr[0:a,3][i]])))
             
             q = 'trajec_x_'+str(k)+'.csv' 
             w = 'trajec_y_'+str(k)+'.csv'
@@ -107,17 +115,19 @@ def calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
             
             x_array_uint16 = np.uint16(x_array)
             y_array_uint16 = np.uint16(y_array)
+            t_array_uint16 = np.uint16(t_array)
         
         
             diff_array_x = create_diff_array(x_array)
             diff_array_y = -create_diff_array(y_array)
+            diff_array_t = create_diff_array(t_array)
             
 #            np.savetxt(directory + '/diffarray/diff_' + q, diff_array_x, fmt='%d', delimiter=',',header='Value',comments='')
 #            np.savetxt(directory + '/diffarray/diff_' + w, diff_array_y, fmt='%d', delimiter=',',header='Value',comments='')        
             
             
-            vol_array_x = create_vol_array(diff_array_x,time_lag)
-            vol_array_y = create_vol_array(diff_array_y,time_lag)
+            vol_array_x = create_vol_array(diff_array_x,diff_array_t,time_lag)
+            vol_array_y = create_vol_array(diff_array_y,diff_array_t,time_lag)
             
 #            np.savetxt(directory + '/volarray/vol_' + q, vol_array_x, fmt='%d', delimiter=',',header='Value',comments='')
 #            np.savetxt(directory + '/volarray/vol_' + w, vol_array_y, fmt='%d', delimiter=',',header='Value',comments='')
@@ -127,15 +137,15 @@ def calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
             vectorfield_y = create_vectorfield(x_array_uint16,y_array_uint16,vol_array_y, vectorfield_y)
         
             if errcorr == 'Yes' or errcorr == 'yes':
-                tensorfield_xx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag,time_exp,sigma)
-                tensorfield_xy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag,time_exp,sigma)
-                tensorfield_yx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag,time_exp,sigma)
-                tensorfield_yy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag,time_exp,sigma)
+                tensorfield_xx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,diff_array_t,tensorfield_xx,time_lag,time_exp,sigma)
+                tensorfield_xy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,diff_array_t,tensorfield_xy,time_lag,time_exp,sigma)
+                tensorfield_yx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,diff_array_t,tensorfield_yx,time_lag,time_exp,sigma)
+                tensorfield_yy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,diff_array_t,tensorfield_yy,time_lag,time_exp,sigma)
             else:                   
-                tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag)
-                tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag)
-                tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag)
-                tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag)
+                tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,diff_array_t,tensorfield_xx,time_lag)
+                tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,diff_array_t,tensorfield_xy,time_lag)
+                tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,diff_array_t,tensorfield_yx,time_lag)
+                tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,diff_array_t,tensorfield_yy,time_lag)
             
             
         else:
@@ -146,17 +156,19 @@ def calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
             
             x_array_uint16 = np.uint16(x_array)
             y_array_uint16 = np.uint16(y_array)
+            t_array_uint16 = np.uint16(t_array)
         
         
             diff_array_x = create_diff_array(x_array)
             diff_array_y = -create_diff_array(y_array)
+            diff_array_t = create_diff_array(t_array)
     
 #            np.savetxt(directory + '/diffarray/diff_' + q, diff_array_x, fmt='%d', delimiter=',',header='Value',comments='')
 #            np.savetxt(directory + '/diffarray/diff_' + w, diff_array_y, fmt='%d', delimiter=',',header='Value',comments='')        
             
             
-            vol_array_x = create_vol_array(diff_array_x,time_lag)
-            vol_array_y = create_vol_array(diff_array_y,time_lag)
+            vol_array_x = create_vol_array(diff_array_x,diff_array_t,time_lag)
+            vol_array_y = create_vol_array(diff_array_y,diff_array_t,time_lag)
             
             
 #            np.savetxt(directory + '/volarray/vol_' + q, vol_array_x, fmt='%d', delimiter=',',header='Value',comments='')
@@ -168,22 +180,24 @@ def calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
         
         
             if errcorr == 'Yes' or errcorr == 'yes':
-                tensorfield_xx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag,time_exp,sigma)
-                tensorfield_xy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag,time_exp,sigma)
-                tensorfield_yx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag,time_exp,sigma)
-                tensorfield_yy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag,time_exp,sigma)
+                tensorfield_xx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,diff_array_t,tensorfield_xx,time_lag,time_exp,sigma)
+                tensorfield_xy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,diff_array_t,tensorfield_xy,time_lag,time_exp,sigma)
+                tensorfield_yx = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,diff_array_t,tensorfield_yx,time_lag,time_exp,sigma)
+                tensorfield_yy = create_tensorfield_errcorr(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,diff_array_t,tensorfield_yy,time_lag,time_exp,sigma)
             else:                   
-                tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,tensorfield_xx,time_lag)
-                tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,tensorfield_xy,time_lag)
-                tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,tensorfield_yx,time_lag)
-                tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,tensorfield_yy,time_lag)
+                tensorfield_xx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_x,diff_array_t,tensorfield_xx,time_lag)
+                tensorfield_xy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_x,diff_array_y,diff_array_t,tensorfield_xy,time_lag)
+                tensorfield_yx = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_x,diff_array_t,tensorfield_yx,time_lag)
+                tensorfield_yy = create_tensorfield(x_array_uint16,y_array_uint16,diff_array_y,diff_array_y,diff_array_t,tensorfield_yy,time_lag)
                 
             k=k+1
             
             x_array = np.array([],'float')
             y_array = np.array([],'float')
+            t_array = np.array([],'float')
             x_array = np.concatenate((x_array,np.array([tracs_unint16corr[0:a,2][i]])))
             y_array = np.concatenate((y_array,np.array([tracs_unint16corr[0:a,3][i]])))
+            t_array = np.concatenate((t_array,np.array([tracs_unint16corr[0:a,1][i]])))
     
     
     tif.imsave(directory+'/pointfield.tif',pointfield)            
