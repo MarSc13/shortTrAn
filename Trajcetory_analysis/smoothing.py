@@ -108,7 +108,7 @@ def smoothing(kdim_smoothing,wdth_outliers,mode_outliers,directory,scaled_pointf
     
     #application of the smoothing filter
     scld_count_fil = average_box_filter(scld_count_mskd,scaled_pointfield,\
-                                        kdim_smoothing,wdth_outliers,mode_outliers)
+                                        kdim_smoothing,0,'remove')
     scld_vec_x_fil = average_box_filter(scld_vec_x_mskd,scaled_pointfield,\
                                         kdim_smoothing,wdth_outliers,mode_outliers)
     scld_vec_y_fil = average_box_filter(scld_vec_y_mskd,scaled_pointfield,\
@@ -141,9 +141,9 @@ if __name__ == "__main__":
     wdth_outliers = 1
     mode_outliers = 'gauss' # or 'remove'
     #data
-    path= '/Users/marieschwebs/Documents/GitHub/EvalTrc/smoothing_examp/'
-    filename = '/results_filtering'
-    scaled_pointfield=tif.imread(path +'scaled_pointfield.tif').T # did not perfom the transposion yet
+    path= '/Volumes/Vin/Python/LUTs/SimTrcTrypLength15/Trc15SetSize2000/results/Trc1'
+    filename = '/results_filtering/'
+    scaled_pointfield=tif.imread(path +'/scaled_pointfield.tif').T # did not perfom the transposion yet
     scld_count_mskd=tif.imread(path+filename+'/scld_count_mskd.tif')
     scld_ten_xx_mskd=tif.imread(path+filename+'scld_ten_xx_mskd.tif')
     scld_ten_xy_mskd=tif.imread(path+filename+'scld_ten_xy_mskd.tif')
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     scld_vec_x_mskd=tif.imread(path+filename+'scld_vec_x_mskd.tif')
     scld_vec_y_mskd=tif.imread(path+filename+'scld_vec_y_mskd.tif')
     #directory to save results
-    directory= '/Users/marieschwebs/Documents/GitHub/EvalTrc/smoothing_examp/'
+    directory= '/Volumes/Vin/Python/LUTs/LUTspeed/Trendline/only_smoothing/'
     
     scld_count_fil,scld_vec_x_fil,scld_vec_y_fil,scld_ten_xx_fil,scld_ten_xy_fil,scld_ten_yx_fil,scld_ten_yy_fil=\
     smoothing(kdim_smoothing,wdth_outliers,mode_outliers,directory,scaled_pointfield,
