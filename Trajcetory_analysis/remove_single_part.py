@@ -15,7 +15,7 @@ def remove_single_part(trac_num,counts,a,tracs_unint16corr,trac_numcorr):
             tracs_unint16corr = np.delete(tracs_unint16corr,(ind),axis=0)
             trac_numcorr = np.delete(trac_numcorr,(ind2),axis=0)
 
-    threshold = 4
+    threshold = 1
     
     #if some trc are deleted because they where just loc then trac_nm and counts 
     #need to be updated
