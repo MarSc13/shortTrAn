@@ -52,5 +52,6 @@ def loadmat_file(path,scale):
 
 if __name__ == "__main__":
     N=1
-    path = ('/Users/marieschwebs/Desktop/TrackingVSGAtto/Trc/Input_data/trc'+str(N))
+    scale = 160
+    path = ('/Volumes/Vin/Python/CorrectionTimeLag/trc'+str(N))
     a,b,tracs,tracs_unint16,trac_num,counts,tracs_unint16corr,trac_numcorr,dt = loadmat_file(path,scale)
