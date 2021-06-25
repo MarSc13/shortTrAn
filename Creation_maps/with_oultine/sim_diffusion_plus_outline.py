@@ -14,6 +14,15 @@ from matplotlib.collections import EllipseCollection
 from copy import deepcopy
 import os
 
+plt.rc('font', size=18)          # controls default text sizes
+plt.rc('axes', titlesize=20)     # fontsize of the axes title
+plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=16)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=16)    # fontsize of the tick labels
+plt.rc('legend', fontsize=14)    # legend fontsize
+plt.rc('figure', titlesize=20)  # fontsize of the figure title
+
+np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)  
 
 '''Calculation of the eigenvalues and eigenvectors which are neccesary 
 for the ellipsoide plots'''
@@ -164,6 +173,10 @@ def EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \
     Y,X = np.mgrid[0:ten_xx.shape[0], 0:ten_xx.shape[1]]
     XY = np.column_stack((X.ravel(), Y.ravel()))
     
+    #mask array to assign pixels with entry 0 to white color
+    pix_max = np.ma.array(pix_max, mask=(pix_max == 0))
+
+    
     #plotting
     fig, ax = plt.subplots()
     ax.set_aspect('equal')
@@ -171,28 +184,30 @@ def EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \
     ax.set_ylim(ten_xx.shape[0], 0-1)
     ec = EllipseCollection(widths_scal, heights_scal, angle, units='x',
                            offsets=XY, transOffset=ax.transData, 
-                           cmap=cmap, linewidths=0.05, edgecolor='black')
+                           cmap=cmap)
     ec.set_array(pix_max.ravel())
     ax.add_collection(ec)
     cbar = plt.colorbar(ec)
-    cbar.ax.tick_params(labelsize=10)
-    cbar.set_label('µm$^2$/s', fontsize = 10)
+    cbar.ax.tick_params(labelsize=16)
+    cbar.set_label('µm$^2$/s')
     plt.xticks([])
     plt.yticks([])
-    plt.hold
+    #plt.hold
     if np.size(outline) == 2:
         plt.plot(outline[0][:,0],outline[0][:,1], color = 'k', linewidth=0.85)  
-        plt.hold
+        #plt.hold
         plt.plot(outline[1][:,0],outline[1][:,1], color = 'k', linewidth=0.85)  
-        plt.hold
+        #plt.hold
         plt.plot(entr[0][:,0],entr[0][:,1], color = col, linewidth=0.85) 
-        plt.hold
+        #plt.hold
         plt.plot(entr[1][:,0],entr[1][:,1], color = col, linewidth=0.85)  
     else:           
         plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=0.85)  
-        plt.hold
+        #plt.hold
         plt.plot(entr[:,0],entr[:,1], color = col, linewidth=0.85)  
+    plt.tight_layout()
     plt.savefig(resultpath+'EllipsoidePlot_Cell'+str(i)+'.png', dpi=300)
+    plt.savefig(resultpath+'EllipsoidePlot_Cell'+str(i)+'.pdf', dpi=300)
     plt.close(fig)
     
     return
@@ -215,22 +230,25 @@ def EllipsoidePlot_Section(widths_scal_fp, heights_scal_fp, angle_fp, \
     ax.set_aspect('equal')
     ec_fp = EllipseCollection(widths_scal_fp, heights_scal_fp, angle_fp, units='x',
                            offsets=XY_fp, transOffset=ax.transData, 
-                           cmap=cmap, linewidths=0.05, edgecolor='black')
+                           cmap=cmap)
     ec_fp.set_array(pix_max_fp.ravel())
     ax.add_collection(ec_fp)
     cbar = plt.colorbar(ec_fp) 
-    cbar.ax.tick_params(labelsize=20)
-    cbar.set_label('µm$^2$/s', fontsize = 20)
+    cbar.ax.tick_params(labelsize=16)
+    cbar.set_label('µm$^2$/s')
     plt.xticks([])
     plt.yticks([])
-    plt.hold
+    #plt.hold
     plt.plot(outline_fp[:,0],outline_fp[:,1], color = 'k', linewidth = 4)  
-    plt.hold
+    #plt.hold
     plt.plot(entr_fp[:,0],entr_fp[:,1], color = 'r', linewidth = 4)
+    plt.tight_layout()
     if size_outline == 2:
         plt.savefig(resultpath+'Sec_EllipsoidePlot_Cell'+str(i)+'_Sec'+str(sec)+'.png', dpi=300)
+        plt.savefig(resultpath+'Sec_EllipsoidePlot_Cell'+str(i)+'_Sec'+str(sec)+'.pdf', dpi=300)
     else:
         plt.savefig(resultpath+'Sec_EllipsoidePlot_Cell'+str(i)+'_Sec'+'.png', dpi=300)
+        plt.savefig(resultpath+'Sec_EllipsoidePlot_Cell'+str(i)+'_Sec'+'.pdf', dpi=300)
     plt.close(fig)
     
     return
@@ -279,6 +297,7 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
         
         pix_max=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         pix_min=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
+        pix_av=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         
         
         '''calc of the eigenvalues and eigenvectors needed for displaying 
@@ -286,7 +305,7 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
         widths, heights, heights_scal, widths_scal, angle = \
         calc_eigenValVec(ten_xx, ten_xy,ten_yx, ten_yy)
         
-        ellipticity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
+        #ellipticity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         eccentricity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         
         '''Determination of the max value for colorcode and colorbar + ellipticity 
@@ -296,28 +315,32 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
                 if widths[f,g] < heights[f,g]:
                     pix_max[f,g] = heights[f,g]
                     pix_min[f,g] = widths[f,g]
-                    ellipticity[f,g] = np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)
+                    #ellipticity[f,g] = np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)
                     eccentricity[f,g] = np.sqrt(1 - np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)**2)
                 else:
                     pix_max[f,g] = widths[f,g]
                     pix_min[f,g] = heights[f,g]
-                    ellipticity[f,g] = np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)
+                    #ellipticity[f,g] = np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)
                     eccentricity[f,g] = np.sqrt(1 - np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)**2)
 
                     
-                    
+        pix_av = np.add(pix_max,pix_min)
+        pix_av = np.divide(pix_av,2) 
+        
+        eccentricity[pix_av == 0] = 0
         
         tif.imsave(resultpath + '/Info/Angle/angle_cell_' + str(i) + '.tif', angle)
         tif.imsave(resultpath + '/Info/DiffCoeffPx/diff_maj_px_cell_' + str(i) + '.tif', pix_max)
         tif.imsave(resultpath + '/Info/DiffCoeffPx/dif_min_px_cell_' + str(i) + '.tif', pix_min)
-        tif.imsave(resultpath + '/Info/Ellipticity/ell_cell_' + str(i) + '.tif', ellipticity)
+        tif.imsave(resultpath + '/Info/DiffCoeffPx/diff_av_px_cell_' + str(i) + '.tif', pix_av)
+        #tif.imsave(resultpath + '/Info/Ellipticity/ell_cell_' + str(i) + '.tif', ellipticity)
         tif.imsave(resultpath + '/Info/Ellipticity/ecc_cell_' + str(i) + '.tif', eccentricity)
         
 
         '''Load points to draw outline in map'''
-        outline = np.load(outline_path + '/coor_outline_scal_' + str(i) + '.npy')
+        outline = np.load(outline_path + '/coor_outline_scal_' + str(i) + '.npy',allow_pickle=True)
         if highlighting == 'Yes': #Case distinction whether fp region should be highlighted
-            entr = np.load(outline_path + '/entr_highl_cell' + str(i) + '.npy')
+            entr = np.load(outline_path + '/entr_highl_cell' + str(i) + '.npy',allow_pickle=True)
         size_outline = np.size(outline)
         
         #case distinction whether two fp are present
@@ -333,52 +356,52 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
                 entr = tuple(entr)
                 
                 #extraction of the region surrounding the first fp
-                widths_scal_fp1, heights_scal_fp1, angle_fp1, pix_max_fp1, outline_fp1, entr_fp1 = \
-                extraction_fp_region(entr[0], outline[0], px_extent, widths_scal, heights_scal, angle, pix_max, ten_xx)
+                widths_scal_fp1, heights_scal_fp1, angle_fp1, pix_av_fp1, outline_fp1, entr_fp1 = \
+                extraction_fp_region(entr[0], outline[0], px_extent, widths_scal, heights_scal, angle, pix_av, ten_xx)
                 
                 #extraction of the region surrounding the second fp
-                widths_scal_fp2, heights_scal_fp2, angle_fp2, pix_max_fp2, outline_fp2, entr_fp2 = \
-                extraction_fp_region(entr[1], outline[1], px_extent, widths_scal, heights_scal, angle, pix_max, ten_xx)
+                widths_scal_fp2, heights_scal_fp2, angle_fp2, pix_av_fp2, outline_fp2, entr_fp2 = \
+                extraction_fp_region(entr[1], outline[1], px_extent, widths_scal, heights_scal, angle, pix_av, ten_xx)
                 
                 '''Generation of ellipsoid plot whole cell'''
                 EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \
-                                         cmap, pix_max, outline, entr, resultpath, i)
+                                         cmap, pix_av, outline, entr, resultpath, i)
                 
                 sec = 1 #serves as input parameter for saving the first section plot
                 
                 '''Generation of ellipsoid plot of section surrounding fp entrance'''
                 EllipsoidePlot_Section(widths_scal_fp1, heights_scal_fp1, angle_fp1, \
-                                       cmap, pix_max_fp1, outline_fp1, entr_fp1, size_outline,\
+                                       cmap, pix_av_fp1, outline_fp1, entr_fp1, size_outline,\
                                        resultpath, i, sec)
     
                 sec = 2 #serves as input parameter for saving the second section plot
     
                 '''Generation of ellipsoid plot of section surrounding fp entrance'''
                 EllipsoidePlot_Section(widths_scal_fp2, heights_scal_fp2, angle_fp2, \
-                                       cmap, pix_max_fp2, outline_fp2, entr_fp2, size_outline,\
+                                       cmap, pix_av_fp2, outline_fp2, entr_fp2, size_outline,\
                                        resultpath, i, sec)
                 
                 #collecting infos about max value in diff coef and average val of each cell
                 sec_info = np.zeros((2,4))
                 #info fp1
                 sec_info[0,0] = i
-                sec_info[0,1] = np.nanmax(pix_max_fp1)
-                pix_max_fp1[pix_max_fp1 == 0] = np.nan
-                sec_info[0,2] = np.nanmean(pix_max_fp1)
-                sec_info[0,3] = np.nanmedian(pix_max_fp1)
+                sec_info[0,1] = np.nanmax(pix_av_fp1)
+                pix_av_fp1[pix_av_fp1 == 0] = np.nan
+                sec_info[0,2] = np.nanmean(pix_av_fp1)
+                sec_info[0,3] = np.nanmedian(pix_av_fp1)
                 #info fp2
                 sec_info[1,0] = i
-                sec_info[1,1] = np.nanmax(pix_max_fp2)
-                pix_max_fp2[pix_max_fp2 == 0] = np.nan
-                sec_info[1,2] = np.nanmean(pix_max_fp2)
-                sec_info[1,3] = np.nanmedian(pix_max_fp2)
+                sec_info[1,1] = np.nanmax(pix_av_fp2)
+                pix_av_fp2[pix_av_fp2 == 0] = np.nan
+                sec_info[1,2] = np.nanmean(pix_av_fp2)
+                sec_info[1,3] = np.nanmedian(pix_av_fp2)
                 
                 diff_info_sec=np.append(diff_info_sec, sec_info, axis=0)
                 
             else:
                 '''Generation of ellipsoid plot whole cell'''
                 EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \
-                                         cmap, pix_max, outline, outline, resultpath, i)
+                                         cmap, pix_av, outline, outline, resultpath, i)
             
             
         #case distinction whether only one fp is present
@@ -389,44 +412,44 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
             #Case distinction whether fp region should be highlighted
             if highlighting == 'Yes':
                 #extraction of the region surrounding the fp
-                widths_scal_fp, heights_scal_fp, angle_fp, pix_max_fp, outline_fp, entr_fp = \
-                extraction_fp_region(entr, outline, px_extent, widths_scal, heights_scal, angle, pix_max, ten_xx)
+                widths_scal_fp, heights_scal_fp, angle_fp, pix_av_fp, outline_fp, entr_fp = \
+                extraction_fp_region(entr, outline, px_extent, widths_scal, heights_scal, angle, pix_av, ten_xx)
                 
                 '''Generation of ellipsoid plot whole cell'''
                 EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \
-                                         cmap, pix_max, outline, entr, resultpath, i)
+                                         cmap, pix_av, outline, entr, resultpath, i)
                 
                 sec = 1 #serves as input parameter for saving the section plot
               
                 '''Generation of ellipsoid plot of section surrounding fp entrance'''
                 EllipsoidePlot_Section(widths_scal_fp, heights_scal_fp, angle_fp, \
-                                       cmap, pix_max_fp, outline_fp, entr_fp, size_outline, \
+                                       cmap, pix_av_fp, outline_fp, entr_fp, size_outline, \
                                        resultpath, i, sec)
                 
                 
                 #collecting infos about max value in diff coef and average val of each cell
                 sec_info = np.zeros((1,4))
                 sec_info[0,0] = i
-                sec_info[0,1] = np.nanmax(pix_max_fp)
-                pix_max_fp[pix_max_fp == 0] = np.nan
-                sec_info[0,2] = np.nanmean(pix_max_fp)
-                sec_info[0,3] = np.nanmedian(pix_max_fp)        
+                sec_info[0,1] = np.nanmax(pix_av_fp)
+                pix_av_fp[pix_av_fp == 0] = np.nan
+                sec_info[0,2] = np.nanmean(pix_av_fp)
+                sec_info[0,3] = np.nanmedian(pix_av_fp)        
                 
                 diff_info_sec=np.append(diff_info_sec, sec_info, axis=0)
                 
             else:
                 '''Generation of ellipsoid plot whole cell'''
                 EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \
-                                         cmap, pix_max, outline, outline, resultpath, i)   
+                                         cmap, pix_av, outline, outline, resultpath, i)   
             
             
             
             
         #collecting infos about max value in diff coef and average val of each cell
-        maximum = np.nanmax(pix_max)
-        pix_max[pix_max == 0] = np.nan
-        average = np.nanmean(pix_max)
-        median = np.nanmedian(pix_max)
+        maximum = np.nanmax(pix_av)
+        pix_av[pix_av == 0] = np.nan
+        average = np.nanmean(pix_av)
+        median = np.nanmedian(pix_av)
         
         diff_info[i-1,:]=maximum, average, median
         

@@ -14,6 +14,15 @@ from matplotlib.collections import EllipseCollection
 from math import degrees
 import os
 
+plt.rc('font', size=18)          # controls default text sizes
+plt.rc('axes', titlesize=20)     # fontsize of the axes title
+plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=16)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=16)    # fontsize of the tick labels
+plt.rc('legend', fontsize=14)    # legend fontsize
+plt.rc('figure', titlesize=20)  # fontsize of the figure title
+
+
 
 
 def EllipsoidePlot(path,filename,resultpath,binning,N):
@@ -65,6 +74,7 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
         angle=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         pix_max=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         pix_min=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
+        pix_av=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         ellipticity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         eccentricity=np.zeros((ten_xx.shape[0],ten_xx.shape[1]))
         
@@ -117,19 +127,24 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
                 if widths[f,g] < heights[f,g]:
                     pix_max[f,g] = heights[f,g]
                     pix_min[f,g] = widths[f,g]
-                    ellipticity[f,g] = np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)
+                    #ellipticity[f,g] = np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)
                     eccentricity[f,g] = np.sqrt(1 - np.divide(widths[f,g],heights[f,g],out=np.zeros_like(widths[f,g]), where=heights[f,g]!=0)**2)
                 else:
                     pix_max[f,g] = widths[f,g]
                     pix_min[f,g] = heights[f,g]
-                    ellipticity[f,g] = np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)
+                    #ellipticity[f,g] = np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)
                     eccentricity[f,g] = np.sqrt(1 - np.divide(heights[f,g],widths[f,g],out=np.zeros_like(heights[f,g]), where=widths[f,g]!=0)**2)
 
+        pix_av = np.add(pix_max,pix_min)
+        pix_av = np.divide(pix_av,2)   
+        
+        eccentricity[pix_av == 0] = 0
         
         tif.imsave(resultpath + '/Info/Angle/angle_cell_' + str(i) + '.tif', angle)
         tif.imsave(resultpath + '/Info/DiffCoeffPx/diff_maj_px_cell_' + str(i) + '.tif', pix_max)
         tif.imsave(resultpath + '/Info/DiffCoeffPx/diff_min_px_cell_' + str(i) + '.tif', pix_min)
-        tif.imsave(resultpath + '/Info/Ellipticity/ell_cell_' + str(i) + '.tif', ellipticity)
+        tif.imsave(resultpath + '/Info/DiffCoeffPx/diff_av_px_cell_' + str(i) + '.tif', pix_av)
+        #tif.imsave(resultpath + '/Info/Ellipticity/ell_cell_' + str(i) + '.tif', ellipticity)
         tif.imsave(resultpath + '/Info/Ellipticity/ecc_cell_' + str(i) + '.tif', eccentricity)
         
         '''Following lines were inserted to count the batches more easily'''
@@ -139,6 +154,9 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
 #        pix_max[pix_max >= 0.45] = 0
         
         cmap = mpl.cm.cool
+        #mask array to assign pixels with entry 0 to white color
+        pix_colorcode = pix_av.copy()
+        pix_colorcode = np.ma.array(pix_colorcode, mask=(pix_colorcode == 0))
         
         fig, ax = plt.subplots()
         ax.set_xlim(0-1, ten_xx.shape[1]+1)
@@ -146,8 +164,8 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
         ax.set_aspect('equal')
         ec = EllipseCollection(widths_scal, heights_scal, angle, units='x',
                                offsets=XY, transOffset=ax.transData, 
-                               cmap=cmap, linewidths=0.05, edgecolor='black')
-        ec.set_array(pix_max.ravel())
+                               cmap=cmap)
+        ec.set_array(pix_colorcode.ravel())
         ax.add_collection(ec)
         cbar = plt.colorbar(ec)
         cbar.set_label('µm$^2$/s')
@@ -160,10 +178,10 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
         plt.close(fig)
         
         
-        maximum = pix_max.max()
-        pix_max[pix_max == 0] = np.nan
-        average = np.nanmean(pix_max)
-        median = np.nanmedian(pix_max)
+        maximum = pix_av.max()
+        pix_av[pix_av == 0] = np.nan
+        average = np.nanmean(pix_av)
+        median = np.nanmedian(pix_av)
         
         diff_info[i-1,:]=maximum, average, median
         
