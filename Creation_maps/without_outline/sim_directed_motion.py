@@ -9,11 +9,21 @@ Created on Mon Sep 23 11:39:15 2019
 import numpy as np
 import tifffile as tif
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+import copy
 from matplotlib.colors import ListedColormap
 from matplotlib import colors
 from matplotlib import cm
 from math import atan2,degrees
 import os
+
+plt.rc('font', size=18)          # controls default text sizes
+plt.rc('axes', titlesize=20)     # fontsize of the axes title
+plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=16)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=16)    # fontsize of the tick labels
+plt.rc('legend', fontsize=14)    # legend fontsize
+plt.rc('figure', titlesize=20)  # fontsize of the figure title
 
 '''relative and absolute maximum error associated with the velocity
 compared with http://davbohn.userpage.fu-berlin.de/physcalc/'''
@@ -157,12 +167,12 @@ def directed_motion(path,filename,resultpath,binning,sigma,t_lag,N,errcorr):
         #mask array to assign pixels with entry 0 to white color
         img_l_mask = np.ma.array(img_l, mask=(img_l == 0))
         #assign zero to white color in current colormap
-        current_cmap = plt.cm.get_cmap()
+        current_cmap = copy.copy(mpl.cm.get_cmap('RdPu'))
         current_cmap.set_bad(color='white')
         
         fig2 = plt.figure()
 #        plt.axis('equal')
-        plt.imshow(img_l,cmap='RdPu')
+        plt.imshow(img_l_mask,cmap=current_cmap)
         plt.xticks([])
         plt.yticks([])
 #        plt.show()
@@ -180,7 +190,7 @@ def directed_motion(path,filename,resultpath,binning,sigma,t_lag,N,errcorr):
             #mask array to assign pixels with entry 0 to white color
             relErr_mask = np.ma.array(relErr, mask=(relErr == 0))
             #assign zero to white color in current colormap
-            current_cmap = plt.cm.get_cmap()
+            current_cmap = copy.copy(mpl.cm.get_cmap('viridis'))
             current_cmap.set_bad(color='white')
     
             fig3 = plt.figure()
@@ -188,7 +198,7 @@ def directed_motion(path,filename,resultpath,binning,sigma,t_lag,N,errcorr):
             plt.xticks([])
             plt.yticks([])
             cbar = plt.colorbar()
-            cbar.set_label('relative error')
+            cbar.set_label('relative standard error')
             plt.savefig(resultpath + 'RelErrMap_Cell' + str(i) + '.png', dpi = 300)
             plt.close(fig3)
         

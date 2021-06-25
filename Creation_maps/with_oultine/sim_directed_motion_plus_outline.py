@@ -9,6 +9,8 @@ Created on Thu Mar  5 13:58:28 2020
 import numpy as np
 import tifffile as tif
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+import copy
 from matplotlib.colors import ListedColormap
 from matplotlib import colors
 from matplotlib import cm
@@ -16,7 +18,15 @@ from math import atan2,degrees
 from copy import deepcopy
 import os
 
+plt.rc('font', size=18)          # controls default text sizes
+plt.rc('axes', titlesize=20)     # fontsize of the axes title
+plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=16)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=16)    # fontsize of the tick labels
+plt.rc('legend', fontsize=14)    # legend fontsize
+plt.rc('figure', titlesize=20)  # fontsize of the figure title
 
+np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)  
 
 '''relative and absolute maximum error associated with the velocity
 compared with http://davbohn.userpage.fu-berlin.de/physcalc/'''
@@ -137,21 +147,23 @@ def HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline, entr, colo
     plt.xticks([])
     plt.yticks([])
     plt.imshow(img_l, cmap='binary', alpha=.01)
-    plt.hold
+    #plt.hold
     if np.size(outline) == 2:
         plt.plot(outline[0][:,0],outline[0][:,1], color = 'k', linewidth=0.85) 
-        plt.hold
+        #plt.hold
         plt.plot(outline[1][:,0],outline[1][:,1], color = 'k', linewidth=0.85) 
-        plt.hold
+        #plt.hold
         plt.plot(entr[0][:,0],entr[0][:,1], color = col1, linewidth=0.85)
-        plt.hold
+        #plt.hold
         plt.plot(entr[1][:,0],entr[1][:,1], color = col1, linewidth=0.85)
     else:
         plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=0.85) 
-        plt.hold
+        #plt.hold
         plt.plot(entr[:,0],entr[:,1], color = col1)
     tif.imsave(resultpath+'/Info/Speed/Speed_Cell'+str(i)+'.tif', img_l)
-    plt.savefig(resultpath+'QuiverPlotSpeed_Cell'+str(i)+'.png', dpi=300)   
+    plt.tight_layout()
+    plt.savefig(resultpath+'QuiverPlotSpeed_Cell'+str(i)+'.png', dpi=300)
+    plt.savefig(resultpath+'QuiverPlotSpeed_Cell'+str(i)+'.pdf', dpi=300)
     plt.close(fig1)
 
     
@@ -160,7 +172,7 @@ def HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline, entr, colo
     #mask array to assign pixels with entry 0 to white color
     img_l_mask = np.ma.array(img_l, mask=(img_l == 0))
     #assign zero to white color in current colormap
-    current_cmap = plt.cm.get_cmap()
+    current_cmap = copy.copy(mpl.cm.get_cmap('RdPu'))
     current_cmap.set_bad(color='white')
        
     fig2 = plt.figure()
@@ -168,22 +180,24 @@ def HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline, entr, colo
     plt.xticks([])
     plt.yticks([])
     cbar=plt.colorbar()    
-    cbar.ax.tick_params(labelsize=10)
-    cbar.set_label('µm/s', fontsize = 10)
-    plt.hold
+    cbar.ax.tick_params(labelsize=18)
+    cbar.set_label('µm/s')
+    #plt.hold
     if np.size(outline) == 2:
         plt.plot(outline[0][:,0],outline[0][:,1], color = 'k', linewidth=0.85) 
-        plt.hold
+        #plt.hold
         plt.plot(outline[1][:,0],outline[1][:,1], color = 'k', linewidth=0.85) 
-        plt.hold
+        #plt.hold
         plt.plot(entr[0][:,0],entr[0][:,1], color = col2, linewidth=0.85)
-        plt.hold
+        #plt.hold
         plt.plot(entr[1][:,0],entr[1][:,1], color = col2, linewidth=0.85)
     else:
         plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=0.85) 
-        plt.hold
+        #plt.hold
         plt.plot(entr[:,0],entr[:,1], color = col2, linewidth=0.85)
+    plt.tight_layout()
     plt.savefig(resultpath+'HeatMap_Cell'+str(i), dpi=300)
+    plt.savefig(resultpath+'HeatMap_Cell'+str(i)+'.pdf', dpi=300)
     plt.close(fig2)
     
     return
@@ -209,22 +223,26 @@ def HeatMap_QuiverPlot_Section(img_x_fp, img_y_fp, img_l_fp, angle_fp, outline_f
     plt.xticks([])
     plt.yticks([])
     plt.imshow(img_l_fp, cmap='binary', alpha=.01)
-    plt.hold
+    #plt.hold
     plt.plot(outline_fp[:,0],outline_fp[:,1], color = 'k', linewidth=4)  
-    plt.hold
+    #plt.hold
     plt.plot(entr_fp[:,0],entr_fp[:,1], color = 'r', linewidth=4)
     if size_outline == 2:
         tif.imsave(resultpath+'/Info/Speed/Sec_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_l_fp)
         tif.imsave(resultpath+'/Info/Angle/Angle_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', angle_fp)
         tif.imsave(resultpath+'/Info/Speed/Xpos_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_x_fp)
         tif.imsave(resultpath+'/Info/Speed/Ypos_Speed_Cell'+str(i)+'Sec'+str(sec)+'.tif', img_y_fp)
+        plt.tight_layout()
         plt.savefig(resultpath+'Sec_QuiverPlotSpeed_Cell'+str(i)+'Sec'+str(sec)+'.png', dpi=300)
+        plt.savefig(resultpath+'Sec_QuiverPlotSpeed_Cell'+str(i)+'Sec'+str(sec)+'.pdf', dpi=300)
     else:
         tif.imsave(resultpath+'/Info/Speed/Sec_Speed_Cell'+str(i)+'Sec.tif', img_l_fp)
         tif.imsave(resultpath+'/Info/Angle/Angle_Speed_Cell'+str(i)+'Sec.tif', angle_fp)
         tif.imsave(resultpath+'/Info/Speed/Xpos_Speed_Cell'+str(i)+'Sec.tif', img_x_fp)
         tif.imsave(resultpath+'/Info/Speed/Ypos_Speed_Cell'+str(i)+'Sec.tif', img_y_fp)
-        plt.savefig(resultpath+'Sec_QuiverPlotSpeed_Cell'+str(i)+'Sec.png', dpi=300)   
+        plt.tight_layout()
+        plt.savefig(resultpath+'Sec_QuiverPlotSpeed_Cell'+str(i)+'Sec.png', dpi=300) 
+        plt.savefig(resultpath+'Sec_QuiverPlotSpeed_Cell'+str(i)+'Sec.pdf', dpi=300) 
     plt.close(fig3)
     
     '''Generation of an speed heat map with the final unit of mum/s'''       
@@ -235,16 +253,19 @@ def HeatMap_QuiverPlot_Section(img_x_fp, img_y_fp, img_l_fp, angle_fp, outline_f
     plt.xlim([-0.5,img_l_fp.shape[1]-0.5])
     plt.ylim([img_l_fp.shape[0]-0.5,-0.5])
     cbar=plt.colorbar()
-    cbar.ax.tick_params(labelsize=20)
-    plt.hold
+    cbar.ax.tick_params(labelsize=16)
+    #plt.hold
     plt.plot(outline_fp[:,0],outline_fp[:,1], color = 'k', linewidth=4)
-    plt.hold
+    #plt.hold
     plt.plot(entr_fp[:,0],entr_fp[:,1], color = '#03E1F0', linewidth=4)
-    cbar.set_label('µm/s', fontsize = 20)
+    cbar.set_label('µm/s')
+    plt.tight_layout()
     if size_outline == 2:
         plt.savefig(resultpath+'Sec_HeatMap_Cell'+str(i)+'Sec'+str(sec), dpi=300)
+        plt.savefig(resultpath+'Sec_HeatMap_Cell'+str(i)+'Sec'+str(sec)+'.pdf', dpi=300)
     else:
         plt.savefig(resultpath+'Sec_HeatMap_Cell'+str(i)+'Sec', dpi=300)
+        plt.savefig(resultpath+'Sec_HeatMap_Cell'+str(i)+'Sec.pdf', dpi=300)
     plt.close(fig4)
     
     return
@@ -271,7 +292,7 @@ def HeatMap_RelErr(relErr, outline, entr, resultpath, i):
     #mask array to assign pixels with entry 0 to white color
     relErr_mask = np.ma.array(relErr, mask=(relErr == 0))
     #assign zero to white color in current colormap
-    current_cmap = plt.cm.get_cmap()
+    current_cmap = copy.copy(mpl.cm.get_cmap('viridis'))
     current_cmap.set_bad(color='white')
 
     fig4 = plt.figure()
@@ -279,21 +300,23 @@ def HeatMap_RelErr(relErr, outline, entr, resultpath, i):
     plt.xticks([])
     plt.yticks([])
     cbar = plt.colorbar()
-    cbar.set_label('relative error')
-    plt.hold
+    cbar.set_label('relative standard error')
+    #plt.hold
     if np.size(outline) == 2:
         plt.plot(outline[0][:,0],outline[0][:,1], color = 'k', linewidth=0.95) 
-        plt.hold
+        #plt.hold
         plt.plot(outline[1][:,0],outline[1][:,1], color = 'k', linewidth=0.95) 
-        plt.hold
+        #plt.hold
         plt.plot(entr[0][:,0],entr[0][:,1], color = col1, linewidth=0.95)
-        plt.hold
+        #plt.hold
         plt.plot(entr[1][:,0],entr[1][:,1], color = col1, linewidth=0.95)
     else:
         plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=0.95) 
-        plt.hold
+        #plt.hold
         plt.plot(entr[:,0],entr[:,1], color = col1,linewidth=0.95)
+    plt.tight_layout()
     plt.savefig(resultpath+'RelErrMap_Cell'+str(i), dpi=300)   
+    plt.savefig(resultpath+'RelErrMap_Cell'+str(i)+'.pdf', dpi=300) 
     plt.close(fig4)
     return
 
@@ -371,9 +394,9 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning,\
         norm = colors.BoundaryNorm(bounds, fourcmap.N)
         
         '''Load points to draw outline in map'''
-        outline = np.load(outline_path + '/coor_outline_scal_' + str(i) + '.npy')
+        outline = np.load(outline_path + '/coor_outline_scal_' + str(i) + '.npy',allow_pickle=True)
         if highlighting == 'Yes':
-            entr = np.load(outline_path + '/entr_highl_cell' + str(i) + '.npy')
+            entr = np.load(outline_path + '/entr_highl_cell' + str(i) + '.npy',allow_pickle=True)
         size_outline = np.size(outline)
         
         if errcorr == 'Yes' or errcorr == 'yes':
@@ -462,8 +485,9 @@ def directed_motion_plus_outline(path,filename,outline_path,resultpath,binning,\
                 HeatMap_QuiverPlot_WholeCell(img_x, img_y, img_l, angle, outline,\
                                              entr, wbmap, resultpath, i)
                 
-                '''Generates relative error map for the whole cell'''
-                HeatMap_RelErr(relErr, outline, entr, resultpath, i)
+                if errcorr == 'Yes' or errcorr == 'yes':
+                    '''Generates relative error map for the whole cell'''
+                    HeatMap_RelErr(relErr, outline, entr, resultpath, i)
                 
                 sec = 1 #serves as input parameter for saving the section plot
     
