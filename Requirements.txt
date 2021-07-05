@@ -1,0 +1,30 @@
+Requirements packages python for the evaluation with shortTrAn
+(MS, 05.07.2021)
+
+Trajectory_analysis:
+- numpy
+- tifffile
+- scipy
+- os
+- cv2
+
+
+Outline_markerROI:
+- numpy
+- tifffile
+- scipy
+- matplotlib
+- tkinter
+- PIL
+- alphashape
+
+Maps:
+- numpy
+- tifffile
+- matplotlib
+- os
+- math
+- copy
+
+
+
