@@ -126,7 +126,7 @@ def extract_fp(pnts, coords):
 
 
 '''Main function: evaluation of MRON signal'''
-def evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning, scal, countfield_path, resultpath, N):
+def evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning, scale_input, px_padding, countfield_path, resultpath, N):
 #    tic = time.time() # in seconds
     
     pnts_hook_cells = []
@@ -143,8 +143,7 @@ def evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning
     
 #        morn = np.array(morn)
         """ nm Skalierung deswegen 160 """
-        scale=160
-        morn = morn*scale # scales px to nm
+        morn = morn*scale_input # scales px to nm
     
         morn_unint16 = np.int16(morn).copy() #reduction of datatype
         
@@ -153,8 +152,8 @@ def evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning
         
         #addition of 160 pix used for padding and resetting both axis equal to 
         #VSG data in padding and binning
-        morn_unint16[:,0] = morn_unint16[:,0] - par_im_sec[0,0] - start_end[0,0] + 160 
-        morn_unint16[:,1] = morn_unint16[:,1] - par_im_sec[1,0] - start_end[1,0] + 160 
+        morn_unint16[:,0] = morn_unint16[:,0] - par_im_sec[0,0] - start_end[0,0] + px_padding 
+        morn_unint16[:,1] = morn_unint16[:,1] - par_im_sec[1,0] - start_end[1,0] + px_padding 
 
 
 #        #has to be the same size as VSG data in and after binning process # commented 200425
@@ -361,10 +360,10 @@ def evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning
             hull_pts_fp2_scal = np.zeros(hull_pts_fp2.shape)
             
                         
-            #scaling of the SM localizations to be in the same scale as data is
+            #scaling of the SM localizations with the binning factor to be in the same scale as data is
             #after binning
-            hull_pts_fp1_scal = np.divide(hull_pts_fp1,160)
-            hull_pts_fp2_scal = np.divide(hull_pts_fp2,160)
+            hull_pts_fp1_scal = np.divide(hull_pts_fp1,px_padding)
+            hull_pts_fp2_scal = np.divide(hull_pts_fp2,px_padding)
             
             #storing data in tuple               
             coor_outline_raw = (hull_pts_fp1, hull_pts_fp2)
@@ -385,8 +384,10 @@ if __name__ == "__main__":
     path_im_sec = '/Volumes/Reindeer/TrackingVSGAtto/Trc/Eval_outgoing/par_im_sec_cell'
     #file generated in binning.py and saved to the subfolder results/TrcN/...
     path_start_end_points_binning = '/Volumes/Reindeer/TrackingVSGAtto/Trc/Eval_outgoing/Trc'
-    scal = 160
+    scale_input = 160 #pixelation of camera (160 nm)used for the convertion to a nm scale
+    px_padding = 160 #corresponds to the px_adding in the trajectory analysis \
+    #(padding of X x1nm pix at the beginning and end of the x and y direction, respectively) and is also the binning factor (scaling)
     countfield_path = '/Volumes/Reindeer/TrackingVSGAtto/Trc/Eval_outgoing/Trc'
     resultpath = '/Volumes/Reindeer/TrackingVSGAtto/MORN/CoorOutline200427'
     
-    evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning, scal, countfield_path, resultpath, N)
+    evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning, scale_input, px_padding, countfield_path, resultpath, N)

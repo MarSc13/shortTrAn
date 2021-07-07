@@ -9,7 +9,7 @@ Created on Mon Sep 16 13:50:19 2019
 import numpy as np 
 """creates space for latter downscalling and defines the shape"""
 
-def padding(tracs_unint16corr, a, resultpath, N):
+def padding(tracs_unint16corr, a, px_padding, resultpath, N):
     x_min = np.amin(tracs_unint16corr[0:a,2])
     x_max = np.amax(tracs_unint16corr[0:a,2])
     y_min = np.amin(tracs_unint16corr[0:a,3])
@@ -17,11 +17,11 @@ def padding(tracs_unint16corr, a, resultpath, N):
     
     a = tracs_unint16corr.shape[0] #number of entries = number of rows
     
-    tracs_unint16corr[0:a,2] = tracs_unint16corr[0:a,2] - x_min + 160 #generation of additional space, generation of 160 x 1nm empty pix in x 
-    tracs_unint16corr[0:a,3] = tracs_unint16corr[0:a,3] - y_min + 160 #generation of additional space, generation of 160 x 1nm empty pix in y 
+    tracs_unint16corr[0:a,2] = tracs_unint16corr[0:a,2] - x_min + px_padding #generation of additional space, generation of 160 x 1nm empty pix in x 
+    tracs_unint16corr[0:a,3] = tracs_unint16corr[0:a,3] - y_min + px_padding #generation of additional space, generation of 160 x 1nm empty pix in y 
     
-    x_length = x_max - x_min + 320 #addtion of 160x1nm pix at the end in x direction
-    y_length = y_max - y_min + 320 #addtion of 160x1nm pix at the end in y direction
+    x_length = x_max - x_min + (px_padding*2) #addtion of 160x1nm pix at the end in x direction
+    y_length = y_max - y_min + (px_padding*2) #addtion of 160x1nm pix at the end in y direction
     
     shape = (x_length,y_length) #used to define the padded arrays
     
@@ -40,4 +40,5 @@ def padding(tracs_unint16corr, a, resultpath, N):
 if __name__ == "__main__":
     resultpath = '/home/mas32ea/Schreibtisch/Drift_and_Diffusion_Pad/TrackingVSGAtto/Results_TrcAnalysis'
     N = 1
-    x_min, x_max, y_min, y_max, a, tracs_unint16corr, x_length, y_length, shape = padding(tracs_unint16corr, a, resultpath, N)
+    px_padding = 160 #padding of X x1nm pix at the beginning and end of the x and y direction, respectively
+    x_min, x_max, y_min, y_max, a, tracs_unint16corr, x_length, y_length, shape = padding(tracs_unint16corr, a, px_padding, resultpath, N)
