@@ -1,0 +1,31 @@
+This is a short manual for the Python scripts:
+
+- outline_marker_signal.py
+- Highlighting_fp.py
+
+
+
+outline_marker_signal.py:
+
+This script extracts the outline from single-molecule localisation of a structural element. Following steps are executed:
+1. Unit transformation to a nanometre scale
+2. Padding by the same number of subpixels used for the trajectory analysis
+3. Adjustment of the feature space to the feature space of the trajectory analysis
+4. Removal of background signal by a polygon line (query via a pup-up window)
+5. Specifying the number of structural elements by a pop-up window
+6. Selection of the structural elects by a polygon line
+7. Generation of the outline by a concave hull
+8. Scaling of the coordinates by the binning factor (trajectory analysis)
+9. Saving of outline coordinates at nanometre scale and after application of the scaling factor
+
+Requirements for the input matrix (.mat): x and y coordinates have to be located in the 3rd and 4th column.
+
+
+Highlighting_fp.py: (OPTIONAL) --> uses the raw coordinates (output from outline_marker_signal.py) which are NOT scaled by the binning factor
+
+1. Script ascertained number of structural elements automatically by the structure input data
+2. Selection of the part to be highlighted by a polygon line
+3. Result will be plotted in a window which vanishes after 10 seconds
+4. Scaling of the coordinates by the binning factor (trajectory analysis)
+5. Saving the coordinates of the highlighted part
+ 
