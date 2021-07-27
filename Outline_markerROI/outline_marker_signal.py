@@ -126,7 +126,7 @@ def extract_fp(pnts, coords):
 
 
 '''Main function: evaluation of MRON signal'''
-def evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning, scale_input, px_padding, countfield_path, resultpath, N):
+def evaluation_MORN_signal(path_morn, countfield_path, scale_input, px_padding, path_im_sec, path_start_end_points_binning, binning_factor, resultpath, N):
 #    tic = time.time() # in seconds
     
     pnts_hook_cells = []
@@ -362,8 +362,8 @@ def evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning
                         
             #scaling of the SM localizations with the binning factor to be in the same scale as data is
             #after binning
-            hull_pts_fp1_scal = np.divide(hull_pts_fp1,px_padding)
-            hull_pts_fp2_scal = np.divide(hull_pts_fp2,px_padding)
+            hull_pts_fp1_scal = np.divide(hull_pts_fp1,binning_factor)
+            hull_pts_fp2_scal = np.divide(hull_pts_fp2,binning_factor)
             
             #storing data in tuple               
             coor_outline_raw = (hull_pts_fp1, hull_pts_fp2)
@@ -378,16 +378,34 @@ def evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning
     
     
 if __name__ == "__main__":
-    N = 20 #number of datasets to be evaluated
+ 
+    #path to the folder of the input data
     path_morn = '/Volumes/Reindeer/TrackingVSGAtto/MORN/ForPython/MORNshifted'
+    
+    #used as template for the creation of the feature space 
+    countfield_path = '/Volumes/Reindeer/TrackingVSGAtto/Trc/Eval_outgoing/Trc'
+    
+    #pixelation of camera (160 nm) used for the convertion to a nm scale
+    scale_input = 160 
+    
+    #corresponds to the px_adding in the trajectory analysis \
+    #(padding of X x1nm pix at the beginning and end of the x and y direction, respectively)
+    px_padding = 160 
+    
+    #Adjustment of the feature space to the feature space of the trajectory analysis.
     #file generated in padding.py and saved in results/... 
     path_im_sec = '/Volumes/Reindeer/TrackingVSGAtto/Trc/Eval_outgoing/par_im_sec_cell'
+    
+    #Adjustment of the feature space to the feature space of the trajectory analysis.
     #file generated in binning.py and saved to the subfolder results/TrcN/...
     path_start_end_points_binning = '/Volumes/Reindeer/TrackingVSGAtto/Trc/Eval_outgoing/Trc'
-    scale_input = 160 #pixelation of camera (160 nm)used for the convertion to a nm scale
-    px_padding = 160 #corresponds to the px_adding in the trajectory analysis \
-    #(padding of X x1nm pix at the beginning and end of the x and y direction, respectively) and is also the binning factor (scaling)
-    countfield_path = '/Volumes/Reindeer/TrackingVSGAtto/Trc/Eval_outgoing/Trc'
+    
+    #Scaling of the coordinates by the binning factor (trajectory analysis)
+    binning_factor = 160
+    
+    #resultpath to the folder to save the final outline
     resultpath = '/Volumes/Reindeer/TrackingVSGAtto/MORN/CoorOutline200427'
     
-    evaluation_MORN_signal(path_morn, path_im_sec, path_start_end_points_binning, scale_input, px_padding, countfield_path, resultpath, N)
+    N = 20 #number of datasets to be evaluated
+    
+    evaluation_MORN_signal(path_morn, countfield_path, scale_input, px_padding, path_im_sec, path_start_end_points_binning, binning_factor, resultpath, N)
