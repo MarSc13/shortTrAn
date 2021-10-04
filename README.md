@@ -5,7 +5,7 @@ This analysis was used to study the VSG (variant surface gylcoprotein) diffusion
 
 This repository contains Jupyter notebooks, Python scripts and exemplary datasets.
 
-Guideline:
+Workflow:
 
 1. <b>shortTrAn_loop.ipynb</b> (shortTrAn/Trajectory_analysis):  This notebook enables the iteration over several data sets. In brief, a unit transformation from pixel to nanometre is performed. Trajectories are split in one step events and for each the displacement is ascertained. The resulting displacements are interpreted both in the light of a diffusion process to calculate a local diffusion coefficient and in light of a directed motion model to calculate a local velocity. Localisations errors can be considered. Finally, the results of the subpixelation are binned to a superpixel scale and spatially filtered.
 2. <b>outline_marker_signal.py & Highlighting_fp.py</b> (shortTrAn/Outline_markerROI) - OPTIONAL:  The first script extracts the outline from single-molecule localisations of a structural element. The second script enables the highlighting of an part of the outline and can be optionally performed.
