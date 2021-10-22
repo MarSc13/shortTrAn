@@ -1,6 +1,8 @@
 # shortTrAn
 Is an approach to calculate the local diffusion coefficient and the local speed of the direct motion from a large number of short trajectories. The approach is based on the approach from Hoze et al (2012) and Hoze, Holcman (2014) and was adapted to our datasets. The results are depicted in diffusion and directed motion maps. Subsequently, the decision on the locally dominant motion type is made by our self-developed guideline and displayed in a supermap.
 
+![Worflow shortTrAn and decision on the locally dominant motion mode](/Images/SchemeOverview_ReadMe.jpg)
+
 This analysis was used to study the VSG (variant surface gylcoprotein) diffusion in the relation to the flagellar pocket (FP) on the unicellular, eukaryotic parasite Trypanosoma brucei. The size of approx. 20 µm in length and 3 µm in width, as well as, the 3D shape of the trypanosomes limit the length of the gained trajectories. Therefore the most popular and commonly used method, to calculate the diffusion coefficient from the fit of the MSD, is not suitable for our datasets to gain robust statistics. 
 
 This repository contains Jupyter notebooks, Python scripts and exemplary datasets.
