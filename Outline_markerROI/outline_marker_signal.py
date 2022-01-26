@@ -147,8 +147,8 @@ def evaluation_MORN_signal(path_morn, countfield_path, scale_input, px_padding, 
     
         morn_unint16 = np.int16(morn).copy() #reduction of datatype
         
-        par_im_sec = np.load(path_im_sec + str(i) + '.npy') #loads parameter from trajecory evaluation
-        start_end = np.load(path_start_end_points_binning + str(i) + '/start_end_binning.npy')
+        par_im_sec = np.load(path_im_sec + str(i) + '.npy',allow_pickle=True) #loads parameter from trajecory evaluation
+        start_end = np.load(path_start_end_points_binning + str(i) + '/par_im_sec_cell.npy',allow_pickle=True)
         
         #addition of 160 pix used for padding and resetting both axis equal to 
         #VSG data in padding and binning
@@ -268,11 +268,13 @@ def evaluation_MORN_signal(path_morn, countfield_path, scale_input, px_padding, 
         coords2 = []
         del morn, morn_unint16, pnts
     
-    np.save(resultpath + '/coords_cells.npy', coords_cells)
-    np.save(resultpath + '/n_hook_cells.npy', n_hook_cells)
-    np.save(resultpath + '/pnts_hook_cells.npy', pnts_hook_cells)
+    np.save(resultpath + '/coords_cells.npy', coords_cells, allow_pickle=True)
+    np.save(resultpath + '/n_hook_cells.npy', n_hook_cells, allow_pickle=True)
+    np.save(resultpath + '/pnts_hook_cells.npy', pnts_hook_cells, allow_pickle=True)
 
-    
+    coords_cells = np.load(resultpath + '/coords_cells.npy', allow_pickle=True)
+    n_hook_cells = np.load(resultpath + '/n_hook_cells.npy', allow_pickle=True)
+    pnts_hook_cells = np.load(resultpath + '/pnts_hook_cells.npy', allow_pickle=True)
         
     for i in range(1, N+1):
         
@@ -309,16 +311,16 @@ def evaluation_MORN_signal(path_morn, countfield_path, scale_input, px_padding, 
             
             #scaling of the SM localizations to be in the same scale as data is
             #after binning
-            hull_pts_fp_scal[:,0] = np.divide(hull_pts_fp[:,0],160)
-            hull_pts_fp_scal[:,1] = np.divide(hull_pts_fp[:,1],160)
+            hull_pts_fp_scal[:,0] = np.divide(hull_pts_fp[:,0],binning_factor)
+            hull_pts_fp_scal[:,1] = np.divide(hull_pts_fp[:,1],binning_factor)
             
             #storing data as tuple
             coor_outline_raw = (hull_pts_fp)
             coor_outline_scal = (hull_pts_fp_scal)
             
             #save coor_outline in the result folder
-            np.save(resultpath + '/coor_outline_raw_' + str(i) , coor_outline_raw)      
-            np.save(resultpath + '/coor_outline_scal_' + str(i) , coor_outline_scal)      
+            np.save(resultpath + '/coor_outline_raw_' + str(i) , coor_outline_raw, allow_pickle=True)      
+            np.save(resultpath + '/coor_outline_scal_' + str(i) , coor_outline_scal, allow_pickle=True)      
 
 
         elif n_hook_cells[i-1] == 2:
@@ -370,8 +372,8 @@ def evaluation_MORN_signal(path_morn, countfield_path, scale_input, px_padding, 
             coor_outline_scal = (hull_pts_fp1_scal, hull_pts_fp2_scal)
             
             #save coor_outline in the result folder
-            np.save(resultpath + '/coor_outline_raw_' + str(i) , coor_outline_raw)
-            np.save(resultpath + '/coor_outline_scal_' + str(i) , coor_outline_scal)
+            np.save(resultpath + '/coor_outline_raw_' + str(i) , coor_outline_raw, allow_pickle=True)
+            np.save(resultpath + '/coor_outline_scal_' + str(i) , coor_outline_scal, allow_pickle=True)
             
 
     return coor_outline_raw, coor_outline_scal 

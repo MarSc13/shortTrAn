@@ -148,10 +148,10 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
         tif.imsave(resultpath + '/Info/Ellipticity/ecc_cell_' + str(i) + '.tif', eccentricity)
         
         '''Following lines were inserted to count the batches more easily'''
-#        widths_scal[pix_max >= 0.45] = 0
-#        heights_scal[pix_max >= 0.45] = 0
-#        angle[pix_max >= 0.45] = 0
-#        pix_max[pix_max >= 0.45] = 0
+        # widths_scal[pix_av >= 0.375] = 0
+        # heights_scal[pix_av >= 0.375] = 0
+        # angle[pix_av >= 0.375] = 0
+        # pix_av[pix_av >= 0.375] = 0
         
         cmap = mpl.cm.cool
         #mask array to assign pixels with entry 0 to white color
@@ -174,7 +174,8 @@ def EllipsoidePlot(path,filename,resultpath,binning,N):
 #        fig.text(0.5, 0.95, 'Cell'+str(i), ha='center', va='center',fontsize=12,
 #                 fontweight='bold')
 #        fig.show() #cause error message: non GUI backend
-        plt.savefig(resultpath+'EllipsoidePlot_Cell'+str(i), dpi=300)
+        plt.savefig(resultpath+'EllipsoidePlot_Cell'+str(i), dpi=400)
+        plt.savefig(resultpath+'EllipsoidePlot_Cell'+str(i)+'.pdf', dpi=400)
         plt.close(fig)
         
         

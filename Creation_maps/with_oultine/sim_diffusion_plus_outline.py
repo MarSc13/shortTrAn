@@ -83,7 +83,7 @@ def calc_eigenValVec(ten_xx, ten_xy,ten_yx, ten_yy):
 
 '''function to extract the fp region from the original arrays with with following rescaling of 
 both axis for fp region plots'''
-def extraction_fp_region(entr, outline, px_extent, widths_scal, heights_scal, angle, pix_max, ten_xx):
+def extraction_fp_region(entr, outline, px_extent, widths_scal, heights_scal, angle, pix_max, ecc, ten_xx):
     
     #def of array, later on containing extremes of x and y values
     fp_ext = np.zeros((2,2))   
@@ -152,8 +152,9 @@ def extraction_fp_region(entr, outline, px_extent, widths_scal, heights_scal, an
     heights_scal_fp = heights_scal[fp_ext[1,0]:fp_ext[1,1]+1,fp_ext[0,0]:fp_ext[0,1]+1].copy()
     angle_fp = angle[fp_ext[1,0]:fp_ext[1,1]+1,fp_ext[0,0]:fp_ext[0,1]+1].copy()
     pix_max_fp = pix_max[fp_ext[1,0]:fp_ext[1,1]+1,fp_ext[0,0]:fp_ext[0,1]+1].copy()
+    ecc_fp = ecc[fp_ext[1,0]:fp_ext[1,1]+1,fp_ext[0,0]:fp_ext[0,1]+1].copy()
        
-    return widths_scal_fp, heights_scal_fp, angle_fp, pix_max_fp, outline_fp, entr_fp
+    return widths_scal_fp, heights_scal_fp, angle_fp, pix_max_fp, ecc_fp, outline_fp, entr_fp
 
 
 '''Generates elipsoid plot of the whole cell'''
@@ -269,7 +270,7 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
     if not os.path.exists(resultpath+'/Info'):
             os.mkdir(resultpath+'/Info')
             os.mkdir(resultpath+'/Info/Angle')
-            os.mkdir(resultpath+'/Info/Ellipticity')
+            os.mkdir(resultpath+'/Info/Eccentricity')
             os.mkdir(resultpath+'/Info/DiffCoeffPx')
 #            resultpath = resultpath+'/DiffusionMaps/'
     
@@ -334,7 +335,7 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
         tif.imsave(resultpath + '/Info/DiffCoeffPx/dif_min_px_cell_' + str(i) + '.tif', pix_min)
         tif.imsave(resultpath + '/Info/DiffCoeffPx/diff_av_px_cell_' + str(i) + '.tif', pix_av)
         #tif.imsave(resultpath + '/Info/Ellipticity/ell_cell_' + str(i) + '.tif', ellipticity)
-        tif.imsave(resultpath + '/Info/Ellipticity/ecc_cell_' + str(i) + '.tif', eccentricity)
+        tif.imsave(resultpath + '/Info/Eccentricity/ecc_cell_' + str(i) + '.tif', eccentricity)
         
 
         '''Load points to draw outline in map'''
@@ -356,12 +357,23 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
                 entr = tuple(entr)
                 
                 #extraction of the region surrounding the first fp
-                widths_scal_fp1, heights_scal_fp1, angle_fp1, pix_av_fp1, outline_fp1, entr_fp1 = \
-                extraction_fp_region(entr[0], outline[0], px_extent, widths_scal, heights_scal, angle, pix_av, ten_xx)
+                widths_scal_fp1, heights_scal_fp1, angle_fp1, pix_av_fp1, ecc_fp1, outline_fp1, entr_fp1 = \
+                extraction_fp_region(entr[0], outline[0], px_extent, widths_scal, heights_scal, angle, pix_av, eccentricity, ten_xx)
                 
                 #extraction of the region surrounding the second fp
-                widths_scal_fp2, heights_scal_fp2, angle_fp2, pix_av_fp2, outline_fp2, entr_fp2 = \
-                extraction_fp_region(entr[1], outline[1], px_extent, widths_scal, heights_scal, angle, pix_av, ten_xx)
+                widths_scal_fp2, heights_scal_fp2, angle_fp2, pix_av_fp2, ecc_fp2, outline_fp2, entr_fp2 = \
+                extraction_fp_region(entr[1], outline[1], px_extent, widths_scal, heights_scal, angle, pix_av, eccentricity, ten_xx)
+                
+                if not os.path.exists(resultpath+'Info/DiffCoeffPx/Sec'):
+                    os.mkdir(resultpath+'Info/DiffCoeffPx/Sec')
+                    
+                if not os.path.exists(resultpath+'Info/Eccentricity/Sec'):
+                    os.mkdir(resultpath+'Info/Eccentricity/Sec')
+                
+                tif.imsave(resultpath + '/Info/Eccentricity/Sec/ecc_cell'+str(i)+'_sec' + str(1) + '.tif', ecc_fp1)
+                tif.imsave(resultpath + '/Info/Eccentricity/Sec/ecc_cell'+str(i)+'_sec' + str(2) + '.tif', ecc_fp2)
+                tif.imsave(resultpath + '/Info/DiffCoeffPx/Sec/diff_av_cell'+str(i)+'_sec' + str(1) + '.tif', pix_av_fp1)
+                tif.imsave(resultpath + '/Info/DiffCoeffPx/Sec/diff_av_cell'+str(i)+'_sec' + str(2) + '.tif', pix_av_fp2)
                 
                 '''Generation of ellipsoid plot whole cell'''
                 EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \
@@ -412,8 +424,17 @@ def EllipsoidePlotPlusOutline(path,filename,outline_path,resultpath,binning,px_e
             #Case distinction whether fp region should be highlighted
             if highlighting == 'Yes':
                 #extraction of the region surrounding the fp
-                widths_scal_fp, heights_scal_fp, angle_fp, pix_av_fp, outline_fp, entr_fp = \
-                extraction_fp_region(entr, outline, px_extent, widths_scal, heights_scal, angle, pix_av, ten_xx)
+                widths_scal_fp, heights_scal_fp, angle_fp, pix_av_fp, ecc_fp, outline_fp, entr_fp = \
+                extraction_fp_region(entr, outline, px_extent, widths_scal, heights_scal, angle, pix_av, eccentricity, ten_xx)
+                
+                if not os.path.exists(resultpath+'Info/DiffCoeffPx/Sec'):
+                    os.mkdir(resultpath+'Info/DiffCoeffPx/Sec')
+                    
+                if not os.path.exists(resultpath+'Info/Eccentricity/Sec'):
+                    os.mkdir(resultpath+'Info/Eccentricity/Sec')
+                
+                tif.imsave(resultpath + '/Info/Eccentricity/Sec/ecc_cell'+str(i)+'_sec' + str(1) + '.tif', ecc_fp)
+                tif.imsave(resultpath + '/Info/DiffCoeffPx/Sec/diff_av_cell'+str(i)+'_sec' + str(1) + '.tif', pix_av_fp)
                 
                 '''Generation of ellipsoid plot whole cell'''
                 EllipsoidePlot_WholeCell(ten_xx, widths_scal, heights_scal, angle, \

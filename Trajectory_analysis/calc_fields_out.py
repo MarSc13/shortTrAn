@@ -37,14 +37,14 @@ def create_vectorfield(array_x,array_y,vol_array,vectorfield):
         vectorfield[array_x[i]][array_y[i]]=vectorfield[array_x[i]][array_y[i]] + vol_array[i]
     return vectorfield
 
-'''Filles the tensor map'''
+'''Filles the tensor map. 2D = MSD/t -> factor 2 accounted when maps are generated'''
 def create_tensorfield(array_x,array_y,diff_array_x,diff_array_y,diff_array_t,tensorfield,dt):
     for i in range(diff_array_x.shape[0]):
         diff_array_dt = np.multiply(diff_array_t[i],dt)
         tensorfield[array_x[i]][array_y[i]]=tensorfield[array_x[i]][array_y[i]] + (diff_array_x[i]*diff_array_y[i]) / diff_array_dt
     return tensorfield
 
-'''Filles the tensor map and corrects for the stat and dyn localization error'''
+'''Filles the tensor map and corrects for the stat and dyn localization error. 2D = MSD/t -> factor 2 accounted when maps are generated '''
 def create_tensorfield_errcorr(array_x,array_y,diff_array_x,diff_array_y, diff_array_t,tensorfield, dt, t_exp, sigma):
     for i in range(diff_array_x.shape[0]):
         
@@ -68,7 +68,7 @@ def create_tensorfield_errcorr(array_x,array_y,diff_array_x,diff_array_y, diff_a
 
 
 """Changes are calculated by firstly determining the differences of pos to pos and then trc for trc. The vectorfields 
-(directed motion) are generated from the velocity arrays and tensorfields (diffusion) are generated from diffarrays"""
+(directed motion) are generated from the velocity arrays and tensorfields (diffusion) are generated from diffarrays in 1D"""
 def calc_fields(a,time_lag,sigma,time_exp,path,resultpath,N,errcorr,pointfield,
                 tracs_unint16corr,trac_numcorr,vectorfield_x,vectorfield_y,
                 tensorfield_xx,tensorfield_xy,tensorfield_yx,tensorfield_yy):

@@ -90,7 +90,7 @@ def Supermap(path_results,fldrnm_maps,path_ecc_lut,path_err_lut,resultpath,stat_
         
         #diffusion information(eccentricity)
         ecc_diff = tif.imread(path_results + '/' + fldrnm_maps + \
-                            '/DiffusionMaps/Info/Ellipticity/ecc_cell_' \
+                            '/DiffusionMaps/Info/Eccentricity/ecc_cell_' \
                             + str(i) + '.tif')
         ecc_diff = np.multiply(mask,ecc_diff) 
             
