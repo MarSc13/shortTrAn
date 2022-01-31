@@ -234,7 +234,7 @@ def Supermap(path_results,fldrnm_maps,path_ecc_lut,path_err_lut,outline_path,hig
             norm = colors.BoundaryNorm(bounds, colormap.N)
         
         outline = np.load(outline_path + '/coor_outline_scal_' + str(i) + '.npy',allow_pickle=True)
-        if highlighting == 'Yes':
+        if highlighting == 'Yes' or highlighting == 'yes':
             entr = np.load(outline_path + '/entr_highl_cell' + str(i) + '.npy',allow_pickle=True)
         size_outline = np.size(outline)
         
@@ -269,14 +269,14 @@ def Supermap(path_results,fldrnm_maps,path_ecc_lut,path_err_lut,outline_path,hig
             #plt.hold
             plt.plot(outline[1][:,0],outline[1][:,1], color = 'k', linewidth=0.85) 
             #plt.hold
-            if highlighting == 'Yes' :
+            if highlighting == 'Yes' or highlighting == highlighting == 'yes':
                 plt.plot(entr[0][:,0],entr[0][:,1], color = '#FFD700', linewidth=0.85)
                 #plt.hold
                 plt.plot(entr[1][:,0],entr[1][:,1], color = '#FFD700', linewidth=0.85)
         else:
             plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=0.85) 
             #plt.hold
-            if highlighting == 'Yes':
+            if highlighting == 'Yes' or highlighting == 'yes':
                 plt.plot(entr[:,0],entr[:,1], color = '#FFD700')
         fig1.tight_layout()
         plt.savefig(resultpath + '/SupermapBeforeFill/Supermap_Cell' +str(i)+ '.pdf',dpi=300)
@@ -293,14 +293,14 @@ def Supermap(path_results,fldrnm_maps,path_ecc_lut,path_err_lut,outline_path,hig
             #plt.hold
             plt.plot(outline[1][:,0],outline[1][:,1], color = 'k', linewidth=1.5) 
             #plt.hold
-            if highlighting == 'Yes':
+            if highlighting == 'Yes'or highlighting == 'yes':
                 plt.plot(entr[0][:,0],entr[0][:,1], color = '#FFD700', linewidth=1.5)
                 #plt.hold
                 plt.plot(entr[1][:,0],entr[1][:,1], color = '#FFD700', linewidth=1.5)
         else:
             plt.plot(outline[:,0],outline[:,1], color = 'k', linewidth=1.5) 
             #plt.hold
-            if highlighting == 'Yes':
+            if highlighting == 'Yes' or highlighting == 'yes':
                 plt.plot(entr[:,0],entr[:,1], color = '#FFD700',linewidth=1.5 )
         fig2.tight_layout()
         plt.savefig(resultpath + '/Supermap_Cell' +str(i)+ '.pdf',dpi=300)
