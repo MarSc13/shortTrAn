@@ -30,7 +30,7 @@ np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 '''relative and absolute maximum error associated with the velocity
 compared with http://davbohn.userpage.fu-berlin.de/physcalc/'''
-def create_rerr_array(array_x, array_y, array_speed, sigma):
+def create_rerr_array(array_x, array_y, array_speed, sigma_dt):
     relErr_Velocity = np.zeros(array_speed.shape) #preinit
     absErr_Velocity = np.zeros(array_speed.shape)
     for a in range(array_speed.shape[0]):#iteration over lines
@@ -41,11 +41,11 @@ def create_rerr_array(array_x, array_y, array_speed, sigma):
                  # note: v = deltax/t with deltax = deltax +/- 2sigma
                  # error of square: a = b^2 -> delta a = 2* delta b/b *a
                 if array_x[a,b] !=0:
-                    err_1 = 2*(2*sigma/abs(array_x[a,b]))*array_x[a,b]**2
+                    err_1 = 2*(2*sigma_dt/abs(array_x[a,b]))*array_x[a,b]**2
                 else:
                     err_1 = 0
                 if array_y[a,b] !=0:
-                    err_2 = 2*(2*sigma/abs(array_y[a,b]))*array_y[a,b]**2
+                    err_2 = 2*(2*sigma_dt/abs(array_y[a,b]))*array_y[a,b]**2
                 else:
                     err_2 = 0
                 # sum of iii = i + ii
